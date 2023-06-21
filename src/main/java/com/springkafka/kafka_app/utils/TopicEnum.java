@@ -1,6 +1,10 @@
 package com.springkafka.kafka_app.utils;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 public enum TopicEnum {
+    TOPIC("topic"),
     TOPIC1("topic_add_to_cart"),
     TOPIC2("topic_add_to_wishlist"),
     TOPIC3("topic_buy_now");
@@ -15,15 +19,14 @@ public enum TopicEnum {
         return topicName;
     }
 
-    public static String[] getAllTopicNames() {
-       TopicEnum[] topics = TopicEnum.values();
-        String[] topicNames = new String[topics.length];
+    public static Collection<String> getAllTopicNames() {
+        Collection<String> topics = new ArrayList<>();
 
-        for (int i = 0; i < topics.length; i++) {
-            topicNames[i] = topics[i].getTopicName();
+        for (TopicEnum topic : values()) {
+            topics.add(topic.getTopicName());
         }
 
-        return topicNames;
+        return topics;
     }
 }
 

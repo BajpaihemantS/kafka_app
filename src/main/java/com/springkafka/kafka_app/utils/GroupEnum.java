@@ -1,6 +1,7 @@
 package com.springkafka.kafka_app.utils;
 
 public enum GroupEnum {
+    GROUP("Group"),
     GROUP_1("Group 1"),
     GROUP_2("Group 2"),
     GROUP_3("Group 3");
