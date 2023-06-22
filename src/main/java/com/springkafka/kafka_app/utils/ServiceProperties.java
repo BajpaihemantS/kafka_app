@@ -12,6 +12,10 @@ public interface ServiceProperties {
 
     public Integer MAX_POLL_RECORDS=1;
 
+    public Integer MAX_PRODUCER = 1000;
+
+    public Integer MAX_CONSUMER = 1000;
+
     public static Integer MAX_NO_MESSAGE_FOUND_COUNT=10;
 }
 

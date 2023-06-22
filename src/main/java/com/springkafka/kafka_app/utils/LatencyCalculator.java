@@ -30,10 +30,11 @@ public class LatencyCalculator {
         if(TOTAL_RECORDS.longValue()==0L) {
             return "No records found";
         }
-        String minLatency = "Minimum latency is " + MIN_LATENCY + " ms";
-        String maxLatency = "Maximum latency is " + MAX_LATENCY + " ms";
-        String averageLatency = "Average latency is " + (TOTAL_LATENCY.longValue() / TOTAL_RECORDS.longValue()) + " ms";
-        return minLatency + "\n" + maxLatency +"\n" + averageLatency;
+        String minLatency = "Minimum latency is " + MIN_LATENCY + " ms\n";
+        String maxLatency = "Maximum latency is " + MAX_LATENCY + " ms\n";
+        String averageLatency = "Average latency is " + (TOTAL_LATENCY.longValue() / TOTAL_RECORDS.longValue()) + " ms\n";
+        String records = "This data corresponds to " + TOTAL_RECORDS + " records";
+        return minLatency + maxLatency + averageLatency + records;
     }
 
 }
