@@ -2,16 +2,28 @@ package com.springkafka.kafka_app.service.kafka_consumer;
 
 import com.springkafka.kafka_app.event.Event;
 import com.springkafka.kafka_app.utils.*;
+import com.springkafka.kafka_app.wrapper.ExecutorServiceWrapper;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.Properties;
 
+@Service
 public class Kafka_Consumer {
+
+    private static ExecutorServiceWrapper executorServiceWrapper;
+
+    @Autowired
+    public Kafka_Consumer(ExecutorServiceWrapper executorServiceWrapper) {
+        this.executorServiceWrapper = executorServiceWrapper;
+        executorServiceWrapper.setThreadCount(ServiceProperties.MAX_CONSUMER);
+    }
 
     public static Consumer<String, Event> createConsumer(String groupId, String topic) {
         final Properties props = new Properties();
@@ -39,15 +51,20 @@ public class Kafka_Consumer {
 
             if(consumerRecords.isEmpty()){
                 noMessageCount++;
+                System.out.println("the last message received before " + noMessageCount);
                 if(noMessageCount > ServiceProperties.MAX_NO_MESSAGE_FOUND_COUNT) {
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e){
-                        System.out.println("Failed with exception " + e);
-                        e.printStackTrace();
-                    }
+                    stop(consumer);
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e){
+                    System.out.println("Failed while trying to make consumer thread sleep with exception " + e);
+                    e.printStackTrace();
                 }
                 continue;
+            }
+            else{
+                noMessageCount = 0;
             }
 
 
@@ -64,22 +81,27 @@ public class Kafka_Consumer {
         }
     }
 
-    public static Runnable createN_Consumer(int n){
+    public static Runnable consumeEvents(){
+        return () -> {
+            Consumer<String,Event> consumer = createConsumer(GroupEnum.GROUP.getGroupName(),TopicEnum.TOPIC.getTopicName());
+            try {
+                runConsumer(consumer);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
 
+    public static Runnable createN_Consumer(int n){
         return () -> {
             for(int i=0;i<n;i++){
-                Consumer<String,Event> consumer = createConsumer(GroupEnum.GROUP.getGroupName(),TopicEnum.TOPIC.getTopicName());
-                try {
-                    runConsumer(consumer);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+                executorServiceWrapper.submit(consumeEvents());
             }
         };
 
     }
 
-    public static void stop(Consumer<String, String> consumer){
+    public static void stop(Consumer<String, Event> consumer){
         consumer.close();
     }
 }

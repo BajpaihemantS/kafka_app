@@ -11,6 +11,7 @@ import com.springkafka.kafka_app.utils.LatencyCalculator;
 import com.springkafka.kafka_app.utils.TopicEnum;
 import com.springkafka.kafka_app.wrapper.ExecutorServiceWrapper;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.producer.Producer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,61 +23,53 @@ import org.springframework.web.bind.annotation.*;
 public class KafkaRestController {
     ExecutorServiceWrapper executorServiceWrapper;
     private final KafkaTopicDeletion kafkaTopicDeletion;
+//    private final Kafka_Consumer kafka_consumer;
+//    private final Kafka_Producer kafka_producer;
 
     @Autowired
-    public KafkaRestController(ExecutorServiceWrapper executorServiceWrapper, KafkaTopicDeletion kafkaTopicDeletion) {
+    public KafkaRestController(ExecutorServiceWrapper executorServiceWrapper, KafkaTopicDeletion kafkaTopicDeletion, Kafka_Consumer kafka_consumer, Kafka_Producer kafka_producer) {
         this.executorServiceWrapper = executorServiceWrapper;
         this.executorServiceWrapper.setThreadCount(10);
         this.kafkaTopicDeletion = kafkaTopicDeletion;
+//        this.kafka_consumer = kafka_consumer;
+//        this.kafka_producer = kafka_producer;
     }
-
 
     @GetMapping("/producer")
     public void produceMessageForAddToCart(@RequestBody String data) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             Event event = objectMapper.readValue(data,Event.class);
-            executorServiceWrapper.submit(Kafka_Producer.createN_Producer(1, event, 1));
+            executorServiceWrapper.submit(Kafka_Producer.createN_Producer(event,1));
         } catch (Exception e){
             e.printStackTrace();
             System.out.println("data parsing failed with exception " + e);
         }
-
-
-
-
 //        Producer<String,String> producer = Kafka_Producer.createProducer();
 //        Kafka_Producer.sendMessage(message,producer,100);
-
-
-
-
 //        executorService.submit(() -> Kafka_Producer.sendMessage(message, TopicEnum.TOPIC1.getTopicName(), producer,1));
     }
 
     @GetMapping("/consumer")
-    public void produceMessageForBuyNow() {
-        executorServiceWrapper.submit(Kafka_Consumer.createN_Consumer(1));
-
-
-
+    public void consumeEvents() {
+        executorServiceWrapper.submit(Kafka_Consumer.consumeEvents());
 //        Consumer<String,String> consumer = Kafka_Consumer.createConsumer(GroupEnum.GROUP.getGroupName(), TopicEnum.TOPIC.getTopicName());
 //        Kafka_Consumer.runConsumer(consumer);
-//
-
-
-
 //        executorService.submit(() -> Kafka_Producer.sendMessage(message, TopicEnum.TOPIC3.getTopicName(), producer, 1));
     }
 
     @GetMapping("/stats")
     public String getLatencyStats(){
+
         return LatencyCalculator.printStats();
+
     }
+
 
     @PostConstruct
     public void clearingTopics(){
         kafkaTopicDeletion.stop();
+
     }
 }
 
@@ -95,4 +88,3 @@ public class KafkaRestController {
 
 // refactoring-------
 // stop consumer------
-

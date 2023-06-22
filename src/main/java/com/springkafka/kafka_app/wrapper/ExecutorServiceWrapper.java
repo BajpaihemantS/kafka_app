@@ -10,16 +10,23 @@ public class ExecutorServiceWrapper {
 
     private ExecutorService executorService;
 
-    public void setThreadCount(int threadCount){
+    public void setThreadCount(int threadCount) {
+//        System.out.println("setThreadCount reaches");
         executorService = Executors.newFixedThreadPool(threadCount);
+//        System.out.println("setThreadCount ends");
     }
 
-    public void submit(Runnable task){
+    public void submit(Runnable task) {
         executorService.submit(task);
     }
 
-    public void stop(){
-        while (!executorService.isTerminated()) executorService.shutdownNow();
+    public void stop() {
+
+        executorService.shutdownNow();
+
+        while (!executorService.isTerminated()){
+            executorService.shutdownNow();
+        }
     }
 
 
