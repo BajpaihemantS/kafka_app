@@ -29,7 +29,7 @@ public class Kafka_Consumer {
     }
 
 
-    public static void runConsumer(Consumer<String, Event> consumer) {
+    public static void runConsumer(Consumer<String, Event> consumer) throws InterruptedException {
 
         int noMessageCount=0;
 
@@ -39,7 +39,14 @@ public class Kafka_Consumer {
 
             if(consumerRecords.isEmpty()){
                 noMessageCount++;
-                if(noMessageCount > ServiceProperties.MAX_NO_MESSAGE_FOUND_COUNT) consumer.close();
+                if(noMessageCount > ServiceProperties.MAX_NO_MESSAGE_FOUND_COUNT) {
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e){
+                        System.out.println("Failed with exception " + e);
+                        e.printStackTrace();
+                    }
+                }
                 continue;
             }
 
