@@ -69,7 +69,11 @@ public class Kafka_Consumer {
         return () -> {
             for(int i=0;i<n;i++){
                 Consumer<String,Event> consumer = createConsumer(GroupEnum.GROUP.getGroupName(),TopicEnum.TOPIC.getTopicName());
-                runConsumer(consumer);
+                try {
+                    runConsumer(consumer);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
         };
 
