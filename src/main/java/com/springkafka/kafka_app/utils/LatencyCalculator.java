@@ -12,14 +12,19 @@ public class LatencyCalculator {
     private static final AtomicLong TOTAL_RECORDS = new AtomicLong(0);
 
     public static void checkMinLatency(Long latency){
+
         MIN_LATENCY = Long.min(latency,MIN_LATENCY);
+
     }
 
     public static void checkMaxLatency(Long latency){
+
         MAX_LATENCY = Long.max(latency,MAX_LATENCY);
+
     }
 
     public static void checkAndAddLatency(Long latency){
+
             TOTAL_LATENCY.addAndGet(latency);
             TOTAL_RECORDS.incrementAndGet();
             checkMaxLatency(latency);
@@ -27,6 +32,7 @@ public class LatencyCalculator {
     }
 
     public static String printStats(){
+
         if(TOTAL_RECORDS.longValue()==0L) {
             return "No records found";
         }
@@ -35,6 +41,7 @@ public class LatencyCalculator {
         String averageLatency = "Average latency is " + (TOTAL_LATENCY.longValue() / TOTAL_RECORDS.longValue()) + " ms\n";
         String records = "This data corresponds to " + TOTAL_RECORDS + " records";
         return minLatency + maxLatency + averageLatency + records;
+
     }
 
 }

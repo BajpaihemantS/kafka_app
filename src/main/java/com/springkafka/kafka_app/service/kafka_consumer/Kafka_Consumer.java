@@ -17,7 +17,7 @@ import java.util.Properties;
 @Service
 public class Kafka_Consumer {
 
-    private static ExecutorServiceWrapper executorServiceWrapper;
+    private final ExecutorServiceWrapper executorServiceWrapper;
 
     @Autowired
     public Kafka_Consumer(ExecutorServiceWrapper executorServiceWrapper) {
@@ -25,7 +25,7 @@ public class Kafka_Consumer {
         executorServiceWrapper.setThreadCount(ServiceProperties.MAX_CONSUMER);
     }
 
-    public static Consumer<String, Event> createConsumer(String groupId, String topic) {
+    public Consumer<String, Event> createConsumer(String groupId, String topic) {
         final Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, ServiceProperties.KAFKA_BROKERS);
         props.put(ConsumerConfig.GROUP_ID_CONFIG,groupId);
@@ -41,7 +41,7 @@ public class Kafka_Consumer {
     }
 
 
-    public static void runConsumer(Consumer<String, Event> consumer) throws InterruptedException {
+    public void runConsumer(Consumer<String, Event> consumer) throws InterruptedException {
 
         int noMessageCount=0;
 
@@ -81,7 +81,7 @@ public class Kafka_Consumer {
         }
     }
 
-    public static Runnable consumeEvents(){
+    public Runnable consumeEvents(){
         return () -> {
             Consumer<String,Event> consumer = createConsumer(GroupEnum.GROUP.getGroupName(),TopicEnum.TOPIC.getTopicName());
             try {
@@ -92,7 +92,7 @@ public class Kafka_Consumer {
         };
     }
 
-    public static Runnable createN_Consumer(int n){
+    public Runnable createN_Consumer(int n){
         return () -> {
             for(int i=0;i<n;i++){
                 executorServiceWrapper.submit(consumeEvents());
