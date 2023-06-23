@@ -4,7 +4,7 @@ import org.apache.kafka.common.protocol.types.Field;
 
 import java.time.Instant;
 
-public class AddToCartEvent extends Event{
+public class AddToCartEvent {
     private String productId;
     private String productName;
     private int quantity;

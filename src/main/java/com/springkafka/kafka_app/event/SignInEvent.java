@@ -2,7 +2,7 @@ package com.springkafka.kafka_app.event;
 
 import org.apache.kafka.common.protocol.types.Field;
 
-public class SignInEvent extends Event{
+public class SignInEvent {
     String userId;
     String password;
     private long timestamp;

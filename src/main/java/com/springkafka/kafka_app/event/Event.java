@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 //@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, property = "eventType")
@@ -18,14 +19,27 @@ import java.util.Map;
 //})
 public class Event {
 
-    Map<String,Object> sdf = new HashMap<>();
-    public Object getSdf(String key) {
-        return sdf.get(key);
+    private Map<String,Object> mapKeyValue = new LinkedHashMap<>();
+
+    public Event() {
+    }
+
+    public Map<String, Object> getMapKeyValue() {
+        return mapKeyValue;
+    }
+
+    public void setMapKeyValue(Map<String, Object> mapKeyValue) {
+        this.mapKeyValue = mapKeyValue;
+    }
+
+    @JsonAnyGetter
+    public Object getMapKeyValue(String key) {
+        return mapKeyValue.get(key);
     }
 
     @JsonAnySetter
-    public void setSdf(String key, Object value) {
-        sdf.put(key,value);
+    public void setMapKeyValue(String key, Object value) {
+        mapKeyValue.put(key,value);
     }
 
 //    private String eventType;

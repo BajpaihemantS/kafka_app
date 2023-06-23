@@ -1,6 +1,6 @@
 package com.springkafka.kafka_app.event;
 
-public class AddToWishlistEvent extends Event{
+public class AddToWishlistEvent {
     private String userId;
     private String productName;
     private String productId;

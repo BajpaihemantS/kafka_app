@@ -50,6 +50,5 @@ public class EventSerializerDeserializer implements Serializer<Event>, Deseriali
 
     @Override
     public void close() {
-        // Cleanup resources, if any
     }
 }
