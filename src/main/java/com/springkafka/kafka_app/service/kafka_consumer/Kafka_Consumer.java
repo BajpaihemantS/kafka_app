@@ -70,7 +70,7 @@ public class Kafka_Consumer {
 
             long recordReceivedTime = System.currentTimeMillis();
             consumerRecords.forEach(record -> {
-                System.out.println("Record value is : " + record.value());
+                System.out.println("Record value is :------------------- " + record.value().getMapKeyValue("eventType"));
                 System.out.println("Record topic is : " + record.topic());
                 System.out.println("Record offset is : " + record.offset());
                 long latency = recordReceivedTime - record.timestamp();

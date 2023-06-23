@@ -1,6 +1,6 @@
 package com.springkafka.kafka_app.event;
 
-public class BuyNowEvent extends Event{
+public class BuyNowEvent {
     private String productId;
     private String productName;
     private int quantity;

@@ -6,6 +6,7 @@ import com.springkafka.kafka_app.config.KafkaTopicDeletion;
 import com.springkafka.kafka_app.event.Event;
 import com.springkafka.kafka_app.service.kafka_consumer.Kafka_Consumer;
 import com.springkafka.kafka_app.service.kafka_producer.Kafka_Producer;
+import com.springkafka.kafka_app.utils.EventSerializerDeserializer;
 import com.springkafka.kafka_app.utils.GroupEnum;
 import com.springkafka.kafka_app.utils.LatencyCalculator;
 import com.springkafka.kafka_app.utils.TopicEnum;
@@ -37,10 +38,11 @@ public class KafkaRestController {
 
     @GetMapping("/producer")
     public void produceMessageForAddToCart(@RequestBody String data) throws JsonProcessingException {
+
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             Event event = objectMapper.readValue(data,Event.class);
-            executorServiceWrapper.submit(Kafka_Producer.createN_Producer(event,1));
+            executorServiceWrapper.submit(Kafka_Producer.createN_Producer(event,100));
         } catch (Exception e){
             e.printStackTrace();
             System.out.println("data parsing failed with exception " + e);
@@ -52,6 +54,7 @@ public class KafkaRestController {
 
     @GetMapping("/consumer")
     public void consumeEvents() {
+
         executorServiceWrapper.submit(Kafka_Consumer.consumeEvents());
 //        Consumer<String,String> consumer = Kafka_Consumer.createConsumer(GroupEnum.GROUP.getGroupName(), TopicEnum.TOPIC.getTopicName());
 //        Kafka_Consumer.runConsumer(consumer);

@@ -31,7 +31,7 @@ public class Kafka_Producer {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, ServiceProperties.KAFKA_BROKERS);
         props.put(ProducerConfig.CLIENT_ID_CONFIG, ServiceProperties.CLIENT_ID);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, EventSerializerDeserializer.class.getName());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, EventSerializerDeserializer.class);
         return new KafkaProducer<>(props);
     }
 //    Another thing we can do for topic is that we can get the message with the topic embedded in that
@@ -53,7 +53,7 @@ public class Kafka_Producer {
 
     }
 
-    public static Runnable sendTasks(Event event, int count){
+    public static Runnable sendTasks(Event event){
         return () -> {
             Producer<String, Event> producer = createProducer();
             sendMessage( event, producer);
@@ -63,9 +63,8 @@ public class Kafka_Producer {
     public static Runnable createN_Producer(Event event, int count){
         return () -> {
             for(int i=0;i<count;i++){
-                executorServiceWrapper.submit(sendTasks(event,count));
+                executorServiceWrapper.submit(sendTasks(event));
             }
-//            executorServiceWrapper.stop();
         };
     }
 
