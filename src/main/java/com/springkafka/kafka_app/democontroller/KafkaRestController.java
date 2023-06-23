@@ -64,16 +64,16 @@ public class KafkaRestController {
     @GetMapping("/stats")
     public String getLatencyStats(){
 
-        return LatencyCalculator.printStats();
+//        return LatencyCalculator.printStats();
 
     }
 
 
-    @PostConstruct
-    public void clearingTopics(){
-        kafkaTopicDeletion.stop();
-
-    }
+//    @PostConstruct
+//    public void clearingTopics(){
+//        kafkaTopicDeletion.stop();
+//
+//    }
 }
 
 //    @GetMapping("/add-to-wishlist")
