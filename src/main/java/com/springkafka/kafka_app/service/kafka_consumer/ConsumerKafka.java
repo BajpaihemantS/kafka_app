@@ -15,12 +15,12 @@ import java.util.Collections;
 import java.util.Properties;
 
 @Service
-public class Kafka_Consumer {
+public class ConsumerKafka {
 
     private final ExecutorServiceWrapper executorServiceWrapper;
 
     @Autowired
-    public Kafka_Consumer(ExecutorServiceWrapper executorServiceWrapper) {
+    public ConsumerKafka(ExecutorServiceWrapper executorServiceWrapper) {
         this.executorServiceWrapper = executorServiceWrapper;
         executorServiceWrapper.setThreadCount(ServiceProperties.MAX_CONSUMER);
     }
@@ -98,7 +98,6 @@ public class Kafka_Consumer {
                 executorServiceWrapper.submit(consumeEvents());
             }
         };
-
     }
 
     public static void stop(Consumer<String, Event> consumer){
