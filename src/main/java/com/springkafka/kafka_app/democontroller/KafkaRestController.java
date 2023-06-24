@@ -50,6 +50,11 @@ public class KafkaRestController {
     @PostConstruct
     public void clearingTopics(){
         kafkaTopicDeletion.stop();
+        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
+    }
+
+    private void shutdown() {
+
 
     }
 }
