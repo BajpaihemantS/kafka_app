@@ -4,9 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.springkafka.kafka_app.config.KafkaTopicDeletion;
 import com.springkafka.kafka_app.service.kafka_consumer.ConsumerKafka;
 import com.springkafka.kafka_app.service.kafka_producer.ProducerKafka;
+import com.springkafka.kafka_app.utils.CustomLogger;
 import com.springkafka.kafka_app.utils.LatencyCalculator;
 import com.springkafka.kafka_app.wrapper.ExecutorServiceWrapper;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,8 +19,8 @@ import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/")
-public class KafkaRestController {
-    ExecutorServiceWrapper executorServiceWrapper;
+public class KafkaRestController extends CustomLogger  {
+    private final ExecutorServiceWrapper executorServiceWrapper;
     private final KafkaTopicDeletion kafkaTopicDeletion;
     private final ConsumerKafka kafka_consumer;
     private final ProducerKafka kafka_producer;
@@ -30,6 +32,7 @@ public class KafkaRestController {
         this.kafkaTopicDeletion = kafkaTopicDeletion;
         this.kafka_consumer = kafka_consumer;
         this.kafka_producer = kafka_producer;
+        Runtime.getRuntime().addShutdownHook( new Thread(this::shutdown));
     }
 
     @GetMapping("/producer")
@@ -47,14 +50,10 @@ public class KafkaRestController {
         return LatencyCalculator.printStats();
     }
 
-    @PostConstruct
-    public void clearingTopics(){
-        kafkaTopicDeletion.stop();
-        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
-    }
-
     private void shutdown() {
-
-
+        info("Initiating shutdown protocol. Killing all processes........");
+        Runtime.getRuntime().addShutdownHook(new Thread(kafka_consumer::shutdown));
+        Runtime.getRuntime().addShutdownHook(new Thread(kafka_producer::shutdown));
+        Runtime.getRuntime().addShutdownHook(new Thread(kafkaTopicDeletion::stop));
     }
 }
