@@ -1,6 +1,8 @@
 package com.springkafka.kafka_app.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public interface ServiceProperties {
     public String KAFKA_BROKERS = "localhost:9092";
@@ -12,5 +14,6 @@ public interface ServiceProperties {
     public Integer MAX_CONSUMER = 1;
     public static Integer MAX_NO_MESSAGE_FOUND_COUNT=10;
     public static final ObjectMapper objectmapper = new ObjectMapper();
+
 }
 

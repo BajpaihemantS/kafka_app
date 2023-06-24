@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.Properties;
 
 @Service
-public class ConsumerKafka {
+public class ConsumerKafka extends CustomLogger {
 
     private final ExecutorServiceWrapper executorServiceWrapper;
 
@@ -43,7 +43,7 @@ public class ConsumerKafka {
 
     public void runConsumer(Consumer<String, Event> consumer) throws InterruptedException {
 
-        int noMessageCount=0;
+        int noMessageCount=1;
 
         while(true){
 
@@ -51,30 +51,32 @@ public class ConsumerKafka {
 
             if(consumerRecords.isEmpty()){
                 noMessageCount++;
-                System.out.println("the last message received before " + noMessageCount);
+                info("no message received since {} seconds", noMessageCount);
+//                System.out.println("the last message received before " + noMessageCount);
                 if(noMessageCount > ServiceProperties.MAX_NO_MESSAGE_FOUND_COUNT) {
                     stop(consumer);
                 }
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e){
-                    System.out.println("Failed while trying to make consumer thread sleep with exception " + e);
+                    error("Failed while trying to make consumer thread sleep with exception", e);
+//                    System.out.println("Failed while trying to make consumer thread sleep with exception" + e);
                     e.printStackTrace();
                 }
                 continue;
             }
             else{
-                noMessageCount = 0;
+                noMessageCount = 1;
             }
 
 
             long recordReceivedTime = System.currentTimeMillis();
             consumerRecords.forEach(record -> {
-                System.out.println("Record value is :------------------- " + record.value().getMapKeyValue("eventType"));
-                System.out.println("Record topic is : " + record.topic());
-                System.out.println("Record offset is : " + record.offset());
+                info("Record value is : {}", record.value());
+                info("Record topic is : {}", record.topic());
+                info("Record offset is : {}", record.offset());
                 long latency = recordReceivedTime - record.timestamp();
-                System.out.println("Record latency is : " + latency);
+                info("Record latency is : {}", + latency);
                 LatencyCalculator.checkAndAddLatency(latency);
                 System.out.println();
             });
@@ -102,5 +104,9 @@ public class ConsumerKafka {
 
     public static void stop(Consumer<String, Event> consumer){
         consumer.close();
+    }
+
+    public void shutdown(){
+        executorServiceWrapper.stop();
     }
 }

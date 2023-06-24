@@ -1,5 +1,6 @@
 package com.springkafka.kafka_app.config;
 
+import com.springkafka.kafka_app.utils.CustomLogger;
 import com.springkafka.kafka_app.utils.TopicEnum;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.Properties;
 
 @Component
-public class KafkaTopicDeletion implements SmartLifecycle {
+public class KafkaTopicDeletion extends CustomLogger implements SmartLifecycle {
 
     private final AdminClient adminClient;
 
@@ -30,9 +31,10 @@ public class KafkaTopicDeletion implements SmartLifecycle {
     public void stop() {
         try {
             adminClient.deleteTopics(TopicEnum.getAllTopicNames());
-            System.out.println("Topics deleted successfully.");
+            info("Topics deleted successfully");
+
         } catch (Exception e) {
-            System.err.println("Error deleting topics: " + e.getMessage());
+            error("Error deleting topics: ", e);
         }
     }
 

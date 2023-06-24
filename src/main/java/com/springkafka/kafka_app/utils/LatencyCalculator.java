@@ -31,9 +31,7 @@ public class LatencyCalculator {
     }
 
     public static synchronized void addModLatency(long latency){
-
         frequencyMap.computeIfAbsent(latency, key -> new AtomicInteger()).incrementAndGet();
-
     }
 
     public static void setModLatency(){
@@ -55,7 +53,6 @@ public class LatencyCalculator {
     }
 
     public static void checkAndAddLatency(Long latency){
-
             TOTAL_LATENCY.addAndGet(latency);
             TOTAL_RECORDS.incrementAndGet();
             checkMaxLatency(latency);
@@ -64,7 +61,6 @@ public class LatencyCalculator {
     }
 
     public static String printStats(){
-
         if(TOTAL_RECORDS.longValue()==0L) {
             return "No records found";
         }
@@ -77,7 +73,6 @@ public class LatencyCalculator {
         String mostLatency = "The latency " + modLatency + " appeared the most " + highestLatencyCount + " times\n";
         String records = "This data corresponds to " + TOTAL_RECORDS + " records";
         return minLatency + maxLatency + averageLatency + mostLatency + records;
-
     }
 
 }
