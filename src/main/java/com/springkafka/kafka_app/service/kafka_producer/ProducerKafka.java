@@ -43,10 +43,6 @@ public class ProducerKafka extends CustomLogger {
         return new KafkaProducer<>(props);
     }
 
-//    Another thing we can do for topic is that we can get the message with the topic embedded in that
-//    But issue is that if the producer wants to produce 1k messages it will be difficult
-//    also i am thinking that rather than creating too many events we can create too many topics
-
     public void sendMessage(Event event, Producer<String, Event> producer) {
         String topic = TopicEnum.TOPIC.getTopicName();
         ProducerRecord<String, Event> record = new ProducerRecord<>(topic, event);
