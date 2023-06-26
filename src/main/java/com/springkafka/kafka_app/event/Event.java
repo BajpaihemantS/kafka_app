@@ -9,14 +9,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-//@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, property = "eventType")
-//@JsonSubTypes({
-//        @JsonSubTypes.Type(value = AddToCartEvent.class, name="addToCartEvent"),
-//        @JsonSubTypes.Type(value = AddToWishlistEvent.class, name="addToWishlistEvent"),
-//        @JsonSubTypes.Type(value = BuyNowEvent.class, name="buyNowEvent"),
-//        @JsonSubTypes.Type(value = SignOutEvent.class, name="signOutEvent"),
-//        @JsonSubTypes.Type(value = SignInEvent.class, name="signInEvent")
-//})
+/**
+ *
+ * This is the class where the coming Event is being mapped.
+ * This is designed for handling the dynamic data.
+ *
+ */
+
 public class Event {
 
     private Map<String,Object> mapKeyValue = new LinkedHashMap<>();
@@ -42,20 +41,4 @@ public class Event {
         mapKeyValue.put(key,value);
     }
 
-//    private String eventType;
-//
-//    public Event() {
-//    }
-//
-//    public Event(String eventType) {
-//        this.eventType = eventType;
-//    }
-//
-//    public String getEventType() {
-//        return eventType;
-//    }
-//
-//    public void setEventType(String eventType) {
-//        this.eventType = eventType;
-//    }
 }

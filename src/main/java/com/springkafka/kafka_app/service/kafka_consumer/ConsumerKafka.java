@@ -14,16 +14,24 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.Properties;
 
+/**
+ *
+ * This is the Consumer class with all its functionalities
+ *
+ */
 @Service
 public class ConsumerKafka extends CustomLogger {
 
     private final ExecutorServiceWrapper executorServiceWrapper;
 
+//    A constructor which initialised the executor service and sets the fixed thread count
     @Autowired
     public ConsumerKafka(ExecutorServiceWrapper executorServiceWrapper) {
         this.executorServiceWrapper = executorServiceWrapper;
         executorServiceWrapper.setThreadCount(ServiceProperties.MAX_CONSUMER);
     }
+
+//    This method produces a new consumer with the required properties
 
     public Consumer<String, Event> createConsumer(String groupId, String topic) {
         final Properties props = new Properties();
@@ -40,6 +48,7 @@ public class ConsumerKafka extends CustomLogger {
         return consumer;
     }
 
+//    This method initiates the consuming of event by the specified consumer
 
     public void runConsumer(Consumer<String, Event> consumer) throws InterruptedException {
 
@@ -52,7 +61,6 @@ public class ConsumerKafka extends CustomLogger {
             if(consumerRecords.isEmpty()){
                 noMessageCount++;
                 info("no message received since {} seconds", noMessageCount);
-//                System.out.println("the last message received before " + noMessageCount);
                 if(noMessageCount > ServiceProperties.MAX_NO_MESSAGE_FOUND_COUNT) {
                     stop(consumer);
                 }
@@ -60,7 +68,6 @@ public class ConsumerKafka extends CustomLogger {
                     Thread.sleep(1000);
                 } catch (InterruptedException e){
                     error("Failed while trying to make consumer thread sleep with exception", e);
-//                    System.out.println("Failed while trying to make consumer thread sleep with exception" + e);
                     e.printStackTrace();
                 }
                 continue;
@@ -69,10 +76,12 @@ public class ConsumerKafka extends CustomLogger {
                 noMessageCount = 1;
             }
 
+//            Printing the required received record values
+
 
             long recordReceivedTime = System.currentTimeMillis();
             consumerRecords.forEach(record -> {
-                info("Record value is : {}", record.value());
+                info("Record value type is : {}", record.value().getMapKeyValue("productId"));
                 info("Record topic is : {}", record.topic());
                 info("Record offset is : {}", record.offset());
                 long latency = recordReceivedTime - record.timestamp();
@@ -82,6 +91,9 @@ public class ConsumerKafka extends CustomLogger {
             });
         }
     }
+
+//    A runnable function which calls for the creation of a new consumer and starts consuming the message
+
 
     public Runnable consumeEvents(){
         return () -> {
@@ -94,6 +106,8 @@ public class ConsumerKafka extends CustomLogger {
         };
     }
 
+//    This runnable function calls for the creation a new consumer in a new separate thread
+
     public Runnable createN_Consumer(int n){
         return () -> {
             for(int i=0;i<n;i++){
@@ -102,9 +116,13 @@ public class ConsumerKafka extends CustomLogger {
         };
     }
 
+//    A method to stop the consumer
+
     public static void stop(Consumer<String, Event> consumer){
         consumer.close();
     }
+
+//    This method stops further thread from created and terminates the currently running threads
 
     public void shutdown(){
         executorServiceWrapper.stop();

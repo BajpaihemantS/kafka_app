@@ -10,8 +10,9 @@ public interface ServiceProperties {
     public String OFFSET_RESET_LATEST="latest";
     public String OFFSET_RESET_EARLIER="earliest";
     public Integer MAX_POLL_RECORDS=1;
-    public Integer MAX_PRODUCER = 100;
+    public Integer MAX_PRODUCER = 10;
     public Integer MAX_CONSUMER = 1;
+    public Integer MAX_EVENTS = 10;
     public static Integer MAX_NO_MESSAGE_FOUND_COUNT=10;
     public static final ObjectMapper objectmapper = new ObjectMapper();
 
