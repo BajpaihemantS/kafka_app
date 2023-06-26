@@ -10,9 +10,16 @@ import org.springframework.stereotype.Component;
 
 import java.util.Properties;
 
+/**
+ *
+ * Class to get the topics deleted once the process has ended
+ *
+ */
+
 @Component
 public class KafkaTopicDeletion extends CustomLogger implements SmartLifecycle {
 
+//  Creating an instance of AdminClient and then assigning it with the required properties
     private final AdminClient adminClient;
 
     public KafkaTopicDeletion() {
@@ -27,6 +34,7 @@ public class KafkaTopicDeletion extends CustomLogger implements SmartLifecycle {
 
     }
 
+// Deleting the topics
     @Override
     public void stop() {
         try {

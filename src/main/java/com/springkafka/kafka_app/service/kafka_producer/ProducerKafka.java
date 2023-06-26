@@ -23,16 +23,25 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
+/**
+ *
+ * This is a Producer class with all the necessary producer functions
+ *
+ */
+
 @Service
 public class ProducerKafka extends CustomLogger {
 
     private ExecutorServiceWrapper executorServiceWrapper;
 
+//    A constructor which initialised the executor service and sets the fixed thread count
     @Autowired
     public ProducerKafka(ExecutorServiceWrapper executorServiceWrapper) {
         this.executorServiceWrapper = executorServiceWrapper;
         executorServiceWrapper.setThreadCount(ServiceProperties.MAX_PRODUCER);
     }
+
+//    This method produces a new producer with the required properties
 
     public Producer<String, Event> createProducer() {
         Properties props = new Properties();
@@ -43,21 +52,21 @@ public class ProducerKafka extends CustomLogger {
         return new KafkaProducer<>(props);
     }
 
+//    This method initiates the sending of event by the specified producer
     public void sendMessage(Event event, Producer<String, Event> producer) {
         String topic = TopicEnum.TOPIC.getTopicName();
         ProducerRecord<String, Event> record = new ProducerRecord<>(topic, event);
         producer.send(record, (metadata, exception) -> {
             if (exception == null) {
                 info("Record sent to offset {} and topic {} \n", metadata.offset(), metadata.topic());
-//                System.out.println("Record sent to offset " + metadata.offset() + " and topic " + metadata.topic() + "\n");
             } else {
                 error("Record submission failed",exception);
-//                System.out.println("Record submission failed");
                 exception.printStackTrace();
             }
         });
     }
 
+//    A runnable function which calls for the creation of a new producer and starts sending the event
     public Runnable sendTasks(Event event){
         return () -> {
             Producer<String, Event> producer = createProducer();
@@ -66,21 +75,19 @@ public class ProducerKafka extends CustomLogger {
         };
     }
 
-    public Runnable createN_Producer(List<Object> dataList){
+//    This runnable function calls for the creation a new producer in a new separate thread
+//    This also extracts a particular event from a list of events
+
+    public Runnable createN_Producer(List<Event> eventList){
         return () -> {
-            for(Object data : dataList){
+            for(Event event : eventList){
                 try {
-                    String data1 = ServiceProperties.objectmapper.writeValueAsString(data);
-                    Event event = ServiceProperties.objectmapper.readValue(data1,Event.class);
+//                    String data1 = ServiceProperties.objectmapper.writeValueAsString(data);
+//                    Event event = ServiceProperties.objectmapper.readValue(data1,Event.class);
                     executorServiceWrapper.submit(sendTasks(event));
-
-
-
 
 //                    executorServiceWrapper.stop();
 //                    Why is this error coming
-
-
 
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -88,6 +95,8 @@ public class ProducerKafka extends CustomLogger {
             }
         };
     }
+
+//    This method stops further thread from created and terminates the currently running threads
 
     public void shutdown(){
         executorServiceWrapper.stop();
