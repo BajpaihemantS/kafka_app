@@ -55,8 +55,8 @@ public class KafkaRestController extends CustomLogger  {
     }
 
     @GetMapping("/streams")
-    public void startStreams(@RequestBody String productId){
-        streamsKafka.start(productId);
+    public void startStreams(){
+        streamsKafka.start();
     }
 
     @GetMapping("/producer")
@@ -75,6 +75,11 @@ public class KafkaRestController extends CustomLogger  {
         return LatencyCalculator.printStats();
     }
 
+    @GetMapping("/getNames")
+    public String getNamesWishList(@RequestBody String productId){
+        return streamsKafka.getNames(productId);
+    }
+
     private void shutdown() {
         info("Initiating shutdown protocol. Killing all processes.......");
         Runtime.getRuntime().addShutdownHook(new Thread(kafka_consumer::shutdown));
@@ -83,3 +88,26 @@ public class KafkaRestController extends CustomLogger  {
 
     }
 }
+
+////gracefully exit
+//        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+//@Override
+//public void run() {
+//        LOGGER.log(Level.INFO, "Exiting......");
+//        try {
+//        theStream.close();
+//        LOGGER.log(Level.INFO, "Kafka Stream services stopped");
+//
+//        server.shutdownNow();
+//        LOGGER.log(Level.INFO, "Jersey REST services stopped");
+//
+//        Utils.closeRESTClient();
+//        LOGGER.log(Level.INFO, "REST client closed");
+//
+//        } catch (Exception ex) {
+//        //log & continue....
+//        LOGGER.log(Level.SEVERE, ex, ex::getMessage);
+//        }
+//
+//        }
+//        }));
