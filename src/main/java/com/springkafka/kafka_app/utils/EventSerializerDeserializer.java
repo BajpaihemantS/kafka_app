@@ -12,7 +12,6 @@ import java.util.Map;
 
 public class EventSerializerDeserializer implements Serializer<Event>, Deserializer<Event> {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void configure(Map<String, ?> configs, boolean isKey) {
@@ -22,7 +21,7 @@ public class EventSerializerDeserializer implements Serializer<Event>, Deseriali
     @Override
     public byte[] serialize(String topic, Event event) {
         try {
-            return objectMapper.writeValueAsBytes(event);
+            return ServiceProperties.objectmapper.writeValueAsBytes(event);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return null;
@@ -37,7 +36,7 @@ public class EventSerializerDeserializer implements Serializer<Event>, Deseriali
     @Override
     public Event deserialize(String topic, byte[] data) {
         try {
-            return objectMapper.readValue(data, Event.class);
+            return ServiceProperties.objectmapper.readValue(data, Event.class);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

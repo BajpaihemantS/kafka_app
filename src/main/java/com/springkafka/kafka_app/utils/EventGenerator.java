@@ -29,13 +29,12 @@ public class EventGenerator {
         }
         int check = random.nextInt(2);
         event.setMapKeyValue("name","Hemant");
+        event.setMapKeyValue("eventType","add_to_Wishlist");
         if(check==1){
             event.setMapKeyValue("productId","1");
-            event.setMapKeyValue("eventType","add_to_Wishlist");
         }
         else {
             event.setMapKeyValue("productId","2");
-            event.setMapKeyValue("eventType","add_to_Wishlist");
         }
         return event;
     }
