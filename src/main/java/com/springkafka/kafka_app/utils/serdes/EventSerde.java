@@ -1,9 +1,8 @@
-package com.springkafka.kafka_app.utils;
+package com.springkafka.kafka_app.utils.serdes;
 
 import com.springkafka.kafka_app.event.Event;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
-import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.Serializer;
 
 import java.util.Map;

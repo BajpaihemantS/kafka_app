@@ -1,4 +1,4 @@
-package com.springkafka.kafka_app.utils;
+package com.springkafka.kafka_app.wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

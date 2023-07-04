@@ -1,10 +1,8 @@
 package com.springkafka.kafka_app.service.kafka_producer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springkafka.kafka_app.event.Event;
-import com.springkafka.kafka_app.utils.CustomLogger;
-import com.springkafka.kafka_app.utils.EventSerializerDeserializer;
+import com.springkafka.kafka_app.wrapper.CustomLogger;
+import com.springkafka.kafka_app.utils.serdes.EventSerializerDeserializer;
 import com.springkafka.kafka_app.utils.ServiceProperties;
 import com.springkafka.kafka_app.utils.TopicEnum;
 import com.springkafka.kafka_app.wrapper.ExecutorServiceWrapper;
@@ -12,15 +10,11 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.protocol.types.Field;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.awt.event.WindowFocusListener;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -39,6 +33,7 @@ public class ProducerKafka extends CustomLogger {
     public ProducerKafka(ExecutorServiceWrapper executorServiceWrapper) {
         this.executorServiceWrapper = executorServiceWrapper;
         executorServiceWrapper.setThreadCount(ServiceProperties.MAX_PRODUCER);
+        Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
 
 //    This method produces a new producer with the required properties
@@ -58,7 +53,7 @@ public class ProducerKafka extends CustomLogger {
         ProducerRecord<String, Event> record = new ProducerRecord<>(topic, event);
         producer.send(record, (metadata, exception) -> {
             if (exception == null) {
-                info("Record sent to offset {} and topic {} \n", metadata.offset(), metadata.topic());
+                info("Record sent to offset {} and Type is {} \n", metadata.offset(), record.value().getMapKeyValue("eventType"));
             } else {
                 error("Record submission failed",exception);
                 exception.printStackTrace();

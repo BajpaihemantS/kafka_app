@@ -29,13 +29,31 @@ public class EventGenerator {
         }
         int check = random.nextInt(2);
         event.setMapKeyValue("name","Hemant");
-        event.setMapKeyValue("eventType","add_to_Wishlist");
+        event.setMapKeyValue("timestamp",System.currentTimeMillis());
+//        if(check==1){
+//            event.setMapKeyValue("eventType","add_to_wishlist");
+//            event.setMapKeyValue("productId","1");
+//        }
+//        else if(check==2){
+//            event.setMapKeyValue("eventType","add_to_cart");
+//            event.setMapKeyValue("productId","2");
+//        }
         if(check==1){
-            event.setMapKeyValue("productId","1");
+            event.setMapKeyValue("eventType","buy_now");
+            event.setMapKeyValue("productId","3");
         }
-        else {
-            event.setMapKeyValue("productId","2");
+//        else if(check==4){
+//            event.setMapKeyValue("eventType","sign_in");
+//            event.setMapKeyValue("productId","4");
+//        }
+        else{
+            event.setMapKeyValue("eventType","sign_out");
+            event.setMapKeyValue("productId","5");
         }
+//        else {
+//            event.setMapKeyValue("eventType","loan_home");
+//            event.setMapKeyValue("productId","6");
+//        }
         return event;
     }
 
