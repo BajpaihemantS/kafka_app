@@ -1,4 +1,4 @@
-package com.springkafka.kafka_app.utils;
+package com.springkafka.kafka_app.utils.calculator;
 
 import org.apache.kafka.common.protocol.types.Field;
 

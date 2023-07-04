@@ -1,25 +1,24 @@
 package com.springkafka.kafka_app.democontroller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.springkafka.kafka_app.config.KafkaTopicDeletion;
-import com.springkafka.kafka_app.config.ShellCommandExecutor;
 import com.springkafka.kafka_app.event.Event;
 import com.springkafka.kafka_app.service.kafka_consumer.ConsumerKafka;
 import com.springkafka.kafka_app.service.kafka_producer.ProducerKafka;
+import com.springkafka.kafka_app.service.kafka_streams.KafkaStreamsService;
 import com.springkafka.kafka_app.service.kafka_streams.StreamsKafka;
-import com.springkafka.kafka_app.utils.CustomLogger;
-import com.springkafka.kafka_app.utils.EventGenerator;
-import com.springkafka.kafka_app.utils.LatencyCalculator;
-import com.springkafka.kafka_app.utils.ServiceProperties;
+import com.springkafka.kafka_app.utils.*;
+import com.springkafka.kafka_app.utils.Query.Query;
+import com.springkafka.kafka_app.utils.calculator.LatencyCalculator;
+import com.springkafka.kafka_app.wrapper.CustomLogger;
 import com.springkafka.kafka_app.wrapper.ExecutorServiceWrapper;
-import jakarta.annotation.PostConstruct;
-import org.slf4j.Logger;
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.ArrayList;
+
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -31,33 +30,32 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/")
-public class KafkaRestController extends CustomLogger  {
+public class KafkaRestController extends CustomLogger {
     private final ExecutorServiceWrapper executorServiceWrapper;
     private final KafkaTopicDeletion kafkaTopicDeletion;
     private final ConsumerKafka kafka_consumer;
     private final ProducerKafka kafka_producer;
     private final EventGenerator eventGenerator;
-
-    private final StreamsKafka streamsKafka;
+    private final KafkaStreamsService kafkaStreamsService;
 
     @Autowired
-    public KafkaRestController(ExecutorServiceWrapper executorServiceWrapper, KafkaTopicDeletion kafkaTopicDeletion, ConsumerKafka kafka_consumer, ProducerKafka kafka_producer, StreamsKafka streamsKafka) {
+    public KafkaRestController(ExecutorServiceWrapper executorServiceWrapper, KafkaTopicDeletion kafkaTopicDeletion, ConsumerKafka kafka_consumer, ProducerKafka kafka_producer, KafkaStreamsService kafkaStreamsService) {
         this.executorServiceWrapper = executorServiceWrapper;
-        this.executorServiceWrapper.setThreadCount(3);
+        this.executorServiceWrapper.setThreadCount(100);
         this.kafkaTopicDeletion = kafkaTopicDeletion;
         this.kafka_consumer = kafka_consumer;
         this.kafka_producer = kafka_producer;
         eventGenerator = new EventGenerator();
-        this.streamsKafka = streamsKafka;
+        this.kafkaStreamsService = kafkaStreamsService;
         Runtime.getRuntime().addShutdownHook( new Thread(this::shutdown));
 //        shellCommandExecutor = new ShellCommandExecutor();
 //        shellCommandExecutor.runZookeeper();
     }
 
-    @GetMapping("/streams")
-    public void startStreams(){
-        streamsKafka.start();
-    }
+//    @GetMapping("/streams")
+//    public void startStreams(){
+//        streamsKafka.start();
+//    }
 
     @GetMapping("/producer")
     public void produceEvents() {
@@ -67,7 +65,8 @@ public class KafkaRestController extends CustomLogger  {
 
     @GetMapping("/consumer")
     public void consumeEvents() {
-        executorServiceWrapper.submit(kafka_consumer.consumeEvents());
+        String topic = TopicEnum.TOPIC.getTopicName();
+        executorServiceWrapper.submit(kafka_consumer.consumeEvents(topic));
     }
 
     @GetMapping("/stats")
@@ -75,17 +74,58 @@ public class KafkaRestController extends CustomLogger  {
         return LatencyCalculator.printStats();
     }
 
-    @GetMapping("/getNames")
-    public String getNamesWishList(@RequestBody String productId){
-        return streamsKafka.getNames(productId);
+
+    @GetMapping("/getEventsInTopic")
+    public void getAllRequiredEvents(@RequestBody Query query){
+        String outputTopic = TopicEnum.TOPIC2.getTopicName();
+        executorServiceWrapper.submit(kafkaStreamsService.startStreams(query, outputTopic));
+        executorServiceWrapper.submit(kafka_consumer.consumeEvents(outputTopic));
     }
+
+
+
+
+
+    /**
+     * @param queries in order of CustomerId, EventType and ProductId (anyone required)
+     * @return the associated events
+     */
+//    @GetMapping("/getEvents")
+//    public List<Event> getEvents(@RequestBody List<String> queries) {
+//        return switch (queries.size()) {
+//            case 1 -> streamsKafka.getEvents(queries.get(0));
+//            case 2 -> streamsKafka.getEvents(queries.get(0), queries.get(1));
+//            case 3 -> streamsKafka.getEvents(queries.get(0), queries.get(1), queries.get(2));
+//            default -> Collections.emptyList();
+//        };
+//    }
+
+    /**
+     * @param  request in order of ->
+     *                query attributes in order -> CustomerId, EventType and ProductId (anyone required)
+     *                int value of how much time you want to request to be from
+     *                char value denoting "S" for seconds, "H" for hours and "M" for months
+     * @return the associated events
+     */
+//    @GetMapping("/getEvents")
+//    public List<Event> getEvents(@RequestBody GetEventsRequest request) {
+//        List<String> queries = request.getQueries();
+//        int val = request.getIntValue();
+//        char ch = request.getCharValue();
+//        return switch (queries.size()) {
+//            case 1 -> streamsKafka.getEvents(queries.get(0), val, ch);
+//            case 2 -> streamsKafka.getEvents(queries.get(0), queries.get(1), val, ch);
+//            case 3 -> streamsKafka.getEvents(queries.get(0), queries.get(1), queries.get(2), val, ch);
+//            default -> Collections.emptyList();
+//        };
+//    }
 
     private void shutdown() {
         info("Initiating shutdown protocol. Killing all processes.......");
         Runtime.getRuntime().addShutdownHook(new Thread(kafka_consumer::shutdown));
         Runtime.getRuntime().addShutdownHook(new Thread(kafka_producer::shutdown));
         Runtime.getRuntime().addShutdownHook(new Thread(kafkaTopicDeletion::stop));
-
+        Runtime.getRuntime().addShutdownHook(new Thread(kafkaStreamsService::shutdown));
     }
 }
 
@@ -97,13 +137,6 @@ public class KafkaRestController extends CustomLogger  {
 //        try {
 //        theStream.close();
 //        LOGGER.log(Level.INFO, "Kafka Stream services stopped");
-//
-//        server.shutdownNow();
-//        LOGGER.log(Level.INFO, "Jersey REST services stopped");
-//
-//        Utils.closeRESTClient();
-//        LOGGER.log(Level.INFO, "REST client closed");
-//
 //        } catch (Exception ex) {
 //        //log & continue....
 //        LOGGER.log(Level.SEVERE, ex, ex::getMessage);

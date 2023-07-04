@@ -1,25 +1,22 @@
-package com.springkafka.kafka_app.utils;
+package com.springkafka.kafka_app.utils.serdes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.springkafka.kafka_app.event.Event;
-import org.apache.kafka.common.protocol.types.Field;
+import com.springkafka.kafka_app.event.EventList;
+import com.springkafka.kafka_app.utils.ServiceProperties;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serializer;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
-class ListEventSerializerDeserializer implements Serializer<List<String>>, Deserializer<List<String>> {
+public class HashMapSerializerDeserializer implements Serializer<Map<String, Integer>>, Deserializer<Map<String, Integer>> {
 
     @Override
     public void configure(Map<String, ?> configs, boolean isKey) {
-        // No additional configuration needed
     }
 
-
     @Override
-    public byte[] serialize(String topic, List<String> data) {
+    public byte[] serialize(String topic, Map<String, Integer> data) {
 
         try {
             return ServiceProperties.objectmapper.writeValueAsBytes(data);
@@ -30,10 +27,11 @@ class ListEventSerializerDeserializer implements Serializer<List<String>>, Deser
     }
 
     @Override
-    public List<String> deserialize(String topic, byte[] data) {
+    public HashMap<String, Integer> deserialize(String topic, byte[] data) {
         try {
-            String[] events = ServiceProperties.objectmapper.readValue(data, String[].class);
-            return Arrays.asList(events);
+            return (HashMap<String, Integer>)ServiceProperties.objectmapper.readValue(data,HashMap.class);
+//            HashMap<String, Integer> hashMap = ServiceProperties.objectmapper.readValue(data,HashMap.class);
+//            return hashMap;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

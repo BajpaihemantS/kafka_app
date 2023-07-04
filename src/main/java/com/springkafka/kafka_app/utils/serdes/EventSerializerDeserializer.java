@@ -1,8 +1,9 @@
-package com.springkafka.kafka_app.utils;
+package com.springkafka.kafka_app.utils.serdes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springkafka.kafka_app.event.Event;
+import com.springkafka.kafka_app.utils.ServiceProperties;
 import org.apache.kafka.common.header.Headers;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;

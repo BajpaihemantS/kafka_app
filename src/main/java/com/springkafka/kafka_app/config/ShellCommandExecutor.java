@@ -1,6 +1,6 @@
 package com.springkafka.kafka_app.config;
 
-import com.springkafka.kafka_app.utils.CustomLogger;
+import com.springkafka.kafka_app.wrapper.CustomLogger;
 
 import java.io.IOException;
 
