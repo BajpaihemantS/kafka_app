@@ -35,60 +35,60 @@ public class KafkaStreamsService extends CustomLogger {
         this.streamsKafka = streamsKafka;
     }
 
-//    public void getOutputStream(Query query, String intermediateTopic, String outputTopic){
-//
-//        StreamsBuilder streamsBuilder = streamsKafka.getStreamsBuilder();
-//        Properties config = streamsKafka.getProperties(outputTopic);
-//
-//        long startTime = query.getTimestamp().getStartTime();
-//        long endTime = query.getTimestamp().getEndTime();
-//
-//        KStream<String, Event> inputStream = streamsBuilder.stream(intermediateTopic);
-//
-//        KTable<String, Map<String, Integer>> userAttributeCountTable = inputStream
-//                .groupBy((key,event) -> event.getMapKeyValue("name").toString())
-//                .aggregate(
-//                        HashMap::new,
-//                        (user, event, aggregate) -> {
-//                            for(AttributeType attributeType : query.getAttributeTypeList()) {
-//                                String eventAttributeType = attributeType.getType();
-//                                String eventAttributeValue = event.getMapKeyValue(eventAttributeType).toString();
-//                                Integer currentValue = aggregate.getOrDefault(eventAttributeValue,0);
-//                                currentValue++;
-//                                aggregate.put(eventAttributeValue,currentValue);
-//                            }
-//                            return aggregate;
-//                        },
-//                        Materialized.<String, Map<String, Integer>, KeyValueStore<Bytes, byte[]>>as(
-//                                ServiceProperties.ATTRIBUTE_COUNT_STORE).withKeySerde(Serdes.String()).withValueSerde(new HashMapSerde()).withLoggingDisabled())
-//                .filter((user, attributeCount) -> {
-//                    for(AttributeType attributeType : query.getAttributeTypeList()){
-//                        for(Attribute attribute : attributeType.getAttributeList()){
-//                            String attributeValue = attribute.getValue();
-//                            Integer count = attribute.getCount();
-//                            if(attributeCount.getOrDefault(attributeValue,0)<count) {
-//                                info("the debug statement in the above if loop");
-//                                return false;
-//                            }
-//                        }
-//                    }
-//                    return true;
-//                });
-//
-//        KStream<String,String> outputStream = userAttributeCountTable
-//                .toStream()
-//                .peek((key,value) -> info("--------222--------",key))
-//                .map((user,attributeCount) -> KeyValue.pair(user,user));
-//
-//        outputStream.to(outputTopic, Produced.with(Serdes.String(),Serdes.String()));
-//
-//
-//        KafkaStreams kafkaStreams = new KafkaStreams(streamsBuilder.build(), config);
-//        kafkaStreams.start();
-//
-//        Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown(kafkaStreams)));
+    public void getOutputStream(Query query, String intermediateTopic, String outputTopic){
 
-//    }
+        StreamsBuilder streamsBuilder = streamsKafka.getStreamsBuilder();
+        Properties config = streamsKafka.getProperties(outputTopic);
+
+        long startTime = query.getTimestamp().getStartTime();
+        long endTime = query.getTimestamp().getEndTime();
+
+        KStream<String, Event> inputStream = streamsBuilder.stream(intermediateTopic);
+
+        KTable<String, Map<String, Integer>> userAttributeCountTable = inputStream
+                .groupBy((key,event) -> event.getMapKeyValue("name").toString())
+                .aggregate(
+                        HashMap::new,
+                        (user, event, aggregate) -> {
+                            for(AttributeType attributeType : query.getAttributeTypeList()) {
+                                String eventAttributeType = attributeType.getType();
+                                String eventAttributeValue = event.getMapKeyValue(eventAttributeType).toString();
+                                Integer currentValue = aggregate.getOrDefault(eventAttributeValue,0);
+                                currentValue++;
+                                aggregate.put(eventAttributeValue,currentValue);
+                            }
+                            return aggregate;
+                        },
+                        Materialized.<String, Map<String, Integer>, KeyValueStore<Bytes, byte[]>>as(
+                                ServiceProperties.ATTRIBUTE_COUNT_STORE).withKeySerde(Serdes.String()).withValueSerde(new HashMapSerde()).withLoggingDisabled())
+                .filter((user, attributeCount) -> {
+                    for(AttributeType attributeType : query.getAttributeTypeList()){
+                        for(Attribute attribute : attributeType.getAttributeList()){
+                            String attributeValue = attribute.getValue();
+                            Integer count = attribute.getCount();
+                            if(attributeCount.getOrDefault(attributeValue,0)<count) {
+                                info("the debug statement in the above if loop");
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                });
+
+        KStream<String,String> outputStream = userAttributeCountTable
+                .toStream()
+                .peek((key,value) -> info("--------222--------",key))
+                .map((user,attributeCount) -> KeyValue.pair(user,user));
+
+        outputStream.to(outputTopic, Produced.with(Serdes.String(),Serdes.String()));
+
+
+        KafkaStreams kafkaStreams = new KafkaStreams(streamsBuilder.build(), config);
+        kafkaStreams.start();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown(kafkaStreams)));
+
+    }
 
     public void getFilteredStream(Query query, String intermediateTopic, String outputTopic)  {
         StreamsBuilder streamsBuilder = streamsKafka.getStreamsBuilder();
