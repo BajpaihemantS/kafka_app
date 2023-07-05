@@ -54,90 +54,90 @@ public class StreamsKafka extends CustomLogger {
 
     }
 
-
-    public List<Event> getEvents(String query){
-        StoreQueryParameters<ReadOnlyKeyValueStore<String, EventList>> storeQueryParameters =
-                StoreQueryParameters.fromNameAndType(ServiceProperties.STATE_STORE, QueryableStoreTypes.keyValueStore());
-
-        ReadOnlyKeyValueStore<String, EventList> stateStore = kafkaStreams.store(storeQueryParameters);
-
-        return stateStore.get(query).getList();
-
-    }
-
-    public List<Event> getEvents(String query1, String query2){
-        StoreQueryParameters<ReadOnlyKeyValueStore<String, EventList>> storeQueryParameters =
-                StoreQueryParameters.fromNameAndType(ServiceProperties.STATE_STORE, QueryableStoreTypes.keyValueStore());
-
-        ReadOnlyKeyValueStore<String, EventList> stateStore = kafkaStreams.store(storeQueryParameters);
-
-        String query = query1+query2;
-
-        return stateStore.get(query).getList();
-
-    }
-
-    public List<Event> getEvents(String query1, String query2, String query3){
-        StoreQueryParameters<ReadOnlyKeyValueStore<String, EventList>> storeQueryParameters =
-                StoreQueryParameters.fromNameAndType(ServiceProperties.STATE_STORE, QueryableStoreTypes.keyValueStore());
-
-        ReadOnlyKeyValueStore<String, EventList> stateStore = kafkaStreams.store(storeQueryParameters);
-
-        String query = query1+query2+query3;
-
-        return stateStore.get(query).getList();
-
-    }
-
-    public List<Event> getEvents(String query, int val, char ch){
-        StoreQueryParameters<ReadOnlyKeyValueStore<String, EventList>> storeQueryParameters =
-                StoreQueryParameters.fromNameAndType(ServiceProperties.STATE_STORE, QueryableStoreTypes.keyValueStore());
-
-        ReadOnlyKeyValueStore<String, EventList> stateStore = kafkaStreams.store(storeQueryParameters);
-
-        List<Event> eventList = stateStore.get(query).getList();
-
-
-        int startIndex = TimestampCalculator.getTimestampValue(eventList, val, ch);
-        int endIndex = eventList.size();
-
-
-        return eventList.subList(startIndex,endIndex);
-    }
-
-    public List<Event> getEvents(String query1, String query2, int val, char ch){
-        StoreQueryParameters<ReadOnlyKeyValueStore<String, EventList>> storeQueryParameters =
-                StoreQueryParameters.fromNameAndType(ServiceProperties.STATE_STORE, QueryableStoreTypes.keyValueStore());
-
-        ReadOnlyKeyValueStore<String, EventList> stateStore = kafkaStreams.store(storeQueryParameters);
-
-        String query = query1+query2;
-        List<Event> eventList = stateStore.get(query).getList();
-
-
-        int startIndex = TimestampCalculator.getTimestampValue(eventList, val, ch);
-        int endIndex = eventList.size();
-
-
-        return eventList.subList(startIndex,endIndex);
-
-    }
-
-    public List<Event> getEvents(String query1, String query2, String query3, int val, char ch){
-        StoreQueryParameters<ReadOnlyKeyValueStore<String, EventList>> storeQueryParameters =
-                StoreQueryParameters.fromNameAndType(ServiceProperties.STATE_STORE, QueryableStoreTypes.keyValueStore());
-
-        ReadOnlyKeyValueStore<String, EventList> stateStore = kafkaStreams.store(storeQueryParameters);
-
-        String query = query1+query2+query3;
-
-        List<Event> eventList = stateStore.get(query).getList();
-
-        int startIndex = TimestampCalculator.getTimestampValue(eventList, val, ch);
-        int endIndex = eventList.size();
-
-        return eventList.subList(startIndex,endIndex);
-    }
+//
+//    public List<Event> getEvents(String query){
+//        StoreQueryParameters<ReadOnlyKeyValueStore<String, EventList>> storeQueryParameters =
+//                StoreQueryParameters.fromNameAndType(ServiceProperties.STATE_STORE, QueryableStoreTypes.keyValueStore());
+//
+//        ReadOnlyKeyValueStore<String, EventList> stateStore = kafkaStreams.store(storeQueryParameters);
+//
+//        return stateStore.get(query).getList();
+//
+//    }
+//
+//    public List<Event> getEvents(String query1, String query2){
+//        StoreQueryParameters<ReadOnlyKeyValueStore<String, EventList>> storeQueryParameters =
+//                StoreQueryParameters.fromNameAndType(ServiceProperties.STATE_STORE, QueryableStoreTypes.keyValueStore());
+//
+//        ReadOnlyKeyValueStore<String, EventList> stateStore = kafkaStreams.store(storeQueryParameters);
+//
+//        String query = query1+query2;
+//
+//        return stateStore.get(query).getList();
+//
+//    }
+//
+//    public List<Event> getEvents(String query1, String query2, String query3){
+//        StoreQueryParameters<ReadOnlyKeyValueStore<String, EventList>> storeQueryParameters =
+//                StoreQueryParameters.fromNameAndType(ServiceProperties.STATE_STORE, QueryableStoreTypes.keyValueStore());
+//
+//        ReadOnlyKeyValueStore<String, EventList> stateStore = kafkaStreams.store(storeQueryParameters);
+//
+//        String query = query1+query2+query3;
+//
+//        return stateStore.get(query).getList();
+//
+//    }
+//
+//    public List<Event> getEvents(String query, int val, char ch){
+//        StoreQueryParameters<ReadOnlyKeyValueStore<String, EventList>> storeQueryParameters =
+//                StoreQueryParameters.fromNameAndType(ServiceProperties.STATE_STORE, QueryableStoreTypes.keyValueStore());
+//
+//        ReadOnlyKeyValueStore<String, EventList> stateStore = kafkaStreams.store(storeQueryParameters);
+//
+//        List<Event> eventList = stateStore.get(query).getList();
+//
+//
+//        int startIndex = TimestampCalculator.getTimestampValue(eventList, val, ch);
+//        int endIndex = eventList.size();
+//
+//
+//        return eventList.subList(startIndex,endIndex);
+//    }
+//
+//    public List<Event> getEvents(String query1, String query2, int val, char ch){
+//        StoreQueryParameters<ReadOnlyKeyValueStore<String, EventList>> storeQueryParameters =
+//                StoreQueryParameters.fromNameAndType(ServiceProperties.STATE_STORE, QueryableStoreTypes.keyValueStore());
+//
+//        ReadOnlyKeyValueStore<String, EventList> stateStore = kafkaStreams.store(storeQueryParameters);
+//
+//        String query = query1+query2;
+//        List<Event> eventList = stateStore.get(query).getList();
+//
+//
+//        int startIndex = TimestampCalculator.getTimestampValue(eventList, val, ch);
+//        int endIndex = eventList.size();
+//
+//
+//        return eventList.subList(startIndex,endIndex);
+//
+//    }
+//
+//    public List<Event> getEvents(String query1, String query2, String query3, int val, char ch){
+//        StoreQueryParameters<ReadOnlyKeyValueStore<String, EventList>> storeQueryParameters =
+//                StoreQueryParameters.fromNameAndType(ServiceProperties.STATE_STORE, QueryableStoreTypes.keyValueStore());
+//
+//        ReadOnlyKeyValueStore<String, EventList> stateStore = kafkaStreams.store(storeQueryParameters);
+//
+//        String query = query1+query2+query3;
+//
+//        List<Event> eventList = stateStore.get(query).getList();
+//
+//        int startIndex = TimestampCalculator.getTimestampValue(eventList, val, ch);
+//        int endIndex = eventList.size();
+//
+//        return eventList.subList(startIndex,endIndex);
+//    }
 
 
 //    public List<String> getRecentNames(String productId) {

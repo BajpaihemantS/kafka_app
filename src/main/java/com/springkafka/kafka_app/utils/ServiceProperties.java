@@ -15,7 +15,8 @@ public interface ServiceProperties  {
     public Integer MAX_EVENTS = 1;
     public static Integer MAX_NO_MESSAGE_FOUND_COUNT=30;
     public static final ObjectMapper objectmapper = new ObjectMapper();
-    public static final String STATE_STORE = "wishlist_store";
+    public static final String ATTRIBUTE_COUNT_STORE = "attributeValueStore";
+    public static final String USER_COUNT_STORE = "userCountStore";
 
 }
 

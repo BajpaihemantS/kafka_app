@@ -1,7 +1,6 @@
 package com.springkafka.kafka_app.service.kafka_streams;
 
 import com.springkafka.kafka_app.event.Event;
-import com.springkafka.kafka_app.service.kafka_producer.ProducerKafka;
 import com.springkafka.kafka_app.utils.Query.Attribute;
 import com.springkafka.kafka_app.utils.Query.AttributeType;
 import com.springkafka.kafka_app.utils.Query.Query;
@@ -9,8 +8,6 @@ import com.springkafka.kafka_app.utils.ServiceProperties;
 import com.springkafka.kafka_app.utils.TopicEnum;
 import com.springkafka.kafka_app.utils.serdes.HashMapSerde;
 import com.springkafka.kafka_app.wrapper.CustomLogger;
-import joptsimple.util.KeyValuePair;
-import org.apache.kafka.common.protocol.types.Field;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -21,10 +18,8 @@ import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.state.KeyValueStore;
-import org.apache.kafka.streams.state.Stores;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.Attr;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,91 +36,71 @@ public class KafkaStreamsService extends CustomLogger {
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
 
-    public Runnable startStreams(Query query, String topic){
-        return () -> {
-            StreamsBuilder streamsBuilder = streamsKafka.getStreamsBuilder();
-            Properties config = streamsKafka.getProperties(topic);
-
-//            Materialized<String, Map<String, Integer>, KeyValueStore<Bytes, byte[]>> materialized = Materialized
-//                    .<String, Map<String, Integer>>as(Stores.persistentKeyValueStore(ServiceProperties.STATE_STORE))
-//                    .withKeySerde(Serdes.String())
-//                    .withValueSerde(new HashMapSerde())
-//                    .withLoggingDisabled()
-//                    .withCachingDisabled();
 
 
-            long startTime = query.getTimestamp().getStartTime();
-            long endTime = query.getTimestamp().getEndTime();
+    public void getFilteredStream(Query query, String topic){
+        StreamsBuilder streamsBuilder = streamsKafka.getStreamsBuilder();
+        Properties config = streamsKafka.getProperties(topic);
 
-            KStream<String, Event> inputStream = streamsBuilder.stream(TopicEnum.TOPIC.getTopicName());
-            info("reached here --0----0-0-0-0-0-0");
+//        StoreBuilder<KeyValueStore<String, Long>> keyValueStoreStoreBuilder = Stores.keyValueStoreBuilder
+//                        (Stores.inMemoryKeyValueStore(ServiceProperties.USER_COUNT_STORE),
+//                                Serdes.String(),
+//                                Serdes.Long())
+//                .withLoggingDisabled();
+//
+//        streamsBuilder.addStateStore(keyValueStoreStoreBuilder);
 
-            KTable<String, Map<String, Integer>> userAttributeCountTable = inputStream
-                    .groupBy((key,event) -> event.getMapKeyValue("name").toString())
-                    .aggregate(
-                            () -> new HashMap<>(),
-                            (user, event, aggregate) -> {
-                                for(AttributeType attributeType : query.getAttributeTypeList()) {
-                                    String eventAttributeType = attributeType.getType();
-                                    String eventAttributeValue = event.getMapKeyValue(eventAttributeType).toString();
-                                    Integer currentValue = aggregate.getOrDefault(eventAttributeValue,0);
-                                    currentValue++;
+//        long startTime = query.getTimestamp().getStartTime();
+//        long endTime = query.getTimestamp().getEndTime();
 
-                                    aggregate.put(eventAttributeValue,currentValue);
-                                }
-                                info("Rechead here ------1111111");
-                                return aggregate;
-                            },
-//                            Materialized.with(Serdes.String(),new HashMapSerde())
-                            Materialized.<String, Map<String, Integer>, KeyValueStore<Bytes, byte[]>>as(
-                                    ServiceProperties.STATE_STORE).withKeySerde(Serdes.String()).withValueSerde(new HashMapSerde()).withLoggingDisabled()
+        KStream<String, Event> inputStream = streamsBuilder.stream(TopicEnum.TOPIC.getTopicName());
 
-                    );
+        KTable<String, Map<String, Integer>> userAttributeCountTable = inputStream
+                .groupBy((key,event) -> event.getMapKeyValue("name").toString())
+                .aggregate(
+                        HashMap::new,
+                        (user, event, aggregate) -> {
+                            for(AttributeType attributeType : query.getAttributeTypeList()) {
+                                String eventAttributeType = attributeType.getType();
+                                String eventAttributeValue = event.getMapKeyValue(eventAttributeType).toString();
+                                Integer currentValue = aggregate.getOrDefault(eventAttributeValue,0);
+                                currentValue++;
 
-            KTable<String, Map<String, Integer>> filteredTable = userAttributeCountTable
-                    .filter((user, attributeCount) -> {
-                        info("Rechead here ------22222222");
-                        for(AttributeType attributeType : query.getAttributeTypeList()){
-                            info("Rechead here ------33333");
-                            for(Attribute attribute : attributeType.getAttributeList()){
-                                String attributeValue = attribute.getValue();
-                                Integer count = attribute.getCount();
-                                info("the want is for {} and count {} but gotten is count {}",attributeValue,count,attributeCount.getOrDefault(attributeValue,0));
-                                if(attributeCount.getOrDefault(attributeValue,0)<count) {
-                                    return false;
-                                }
-                                debug("reached here but i don't think this is working");
+                                aggregate.put(eventAttributeValue,currentValue);
+                            }
+                            return aggregate;
+                        },
+                        Materialized.<String, Map<String, Integer>, KeyValueStore<Bytes, byte[]>>as(
+                                ServiceProperties.ATTRIBUTE_COUNT_STORE).withKeySerde(Serdes.String()).withValueSerde(new HashMapSerde()).withLoggingDisabled()
+
+                )
+                .filter((user, attributeCount) -> {
+                    for(AttributeType attributeType : query.getAttributeTypeList()){
+                        for(Attribute attribute : attributeType.getAttributeList()){
+                            String attributeValue = attribute.getValue();
+                            Integer count = attribute.getCount();
+                            if(attributeCount.getOrDefault(attributeValue,0)<count) {
+                                return false;
                             }
                         }
-                        return true;
-                    });
-
-            KStream<String,String> outputStream = filteredTable
-                    .toStream()
-                    .peek((user,attribu) -> info("user name is {}",user))
-                    .map((user,attributeCount) -> KeyValue.pair(user,user));
-
-            outputStream.to(topic, Produced.with(Serdes.String(),Serdes.String()));
+                    }
+                    return true;
+                });
 
 
-//            kStream
-//                    .filter((key,event) -> {
-//                long timestamp = Long.parseLong(event.getMapKeyValue("timestamp").toString());
-//                info("attribute value is {} while attribute type is {}",attributeValue, event.getMapKeyValue(attributeType));
-//
-//                return attributeValue.equals(event.getMapKeyValue(attributeType))
-//                        && timestamp >= startTime
-//                        && timestamp <= endTime;
-//
-//            })
-//
-//                    .to(topic);
+        KStream<String,String> outputStream = userAttributeCountTable
+                .toStream()
+                .map((user,attributeCount) -> KeyValue.pair(user,user));
 
-            kafkaStreams = new KafkaStreams(streamsBuilder.build(), config);
-            kafkaStreams.start();
+        outputStream.to(topic, Produced.with(Serdes.String(),Serdes.String()));
 
-        };
+        kafkaStreams = new KafkaStreams(streamsBuilder.build(), config);
+        kafkaStreams.start();
 
+    }
+
+    public Runnable startStreams(Query query, String topic){
+        return () -> getFilteredStream(query,topic);
     }
 
     public void shutdown(){
