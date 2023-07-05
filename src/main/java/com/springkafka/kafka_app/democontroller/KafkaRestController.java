@@ -122,25 +122,6 @@ public class KafkaRestController extends CustomLogger {
 
     private void shutdown() {
         info("Initiating shutdown protocol. Killing all processes.......");
-        Runtime.getRuntime().addShutdownHook(new Thread(kafka_consumer::shutdown));
-        Runtime.getRuntime().addShutdownHook(new Thread(kafka_producer::shutdown));
-        Runtime.getRuntime().addShutdownHook(new Thread(kafkaTopicDeletion::stop));
-        Runtime.getRuntime().addShutdownHook(new Thread(kafkaStreamsService::shutdown));
     }
 }
 
-////gracefully exit
-//        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-//@Override
-//public void run() {
-//        LOGGER.log(Level.INFO, "Exiting......");
-//        try {
-//        theStream.close();
-//        LOGGER.log(Level.INFO, "Kafka Stream services stopped");
-//        } catch (Exception ex) {
-//        //log & continue....
-//        LOGGER.log(Level.SEVERE, ex, ex::getMessage);
-//        }
-//
-//        }
-//        }));
