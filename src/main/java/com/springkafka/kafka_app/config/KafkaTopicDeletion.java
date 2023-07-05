@@ -7,6 +7,7 @@ import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -33,7 +34,6 @@ public class KafkaTopicDeletion extends CustomLogger implements SmartLifecycle {
 
     }
 
-// Deleting the topics
     @Override
     public void stop() {
         try {

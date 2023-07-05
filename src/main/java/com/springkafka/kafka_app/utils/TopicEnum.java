@@ -5,8 +5,8 @@ import java.util.Collection;
 
 public enum TopicEnum {
     TOPIC("topic"),
-    TOPIC1("topicadd_to_cart"),
-    TOPIC2("topicadd_to_wishlist"),
+    TOPIC1("topiceventType"),
+    TOPIC2("topiceventType_count"),
     TOPIC3("topicbuy_now"),
     TOPIC4("topicsign_in"),
     TOPIC5("topicsign_out");
