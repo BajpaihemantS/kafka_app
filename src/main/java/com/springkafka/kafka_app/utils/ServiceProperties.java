@@ -1,22 +1,20 @@
 package com.springkafka.kafka_app.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public interface ServiceProperties  {
-    public String KAFKA_BROKERS = "localhost:9092";
-    public String CLIENT_ID="client2";
-    public String OFFSET_RESET_LATEST="latest";
-    public String OFFSET_RESET_EARLIER="earliest";
-    public Integer MAX_POLL_RECORDS=1;
-    public Integer MAX_PRODUCER = 100;
-    public Integer MAX_CONSUMER = 1;
-    public Integer MAX_EVENTS = 1;
-    public static Integer MAX_NO_MESSAGE_FOUND_COUNT=30;
-    public static final ObjectMapper objectmapper = new ObjectMapper();
-    public static final String ATTRIBUTE_COUNT_STORE = "attributeValueStore";
-    public static final String USER_COUNT_STORE = "userCountStore";
+    String KAFKA_BROKERS = "localhost:9092";
+    String CLIENT_ID="client2";
+    String OFFSET_RESET_LATEST="latest";
+    String OFFSET_RESET_EARLIER="earliest";
+    Integer MAX_POLL_RECORDS=1;
+    Integer MAX_PRODUCER = 100;
+    Integer MAX_CONSUMER = 1;
+    Integer MAX_EVENTS = 1;
+    Integer MAX_NO_MESSAGE_FOUND_COUNT=30;
+    ObjectMapper objectmapper = new ObjectMapper();
+    String ATTRIBUTE_COUNT_STORE = "attributeValueStore";
+    String USER_COUNT_STORE = "userCountStore";
 
 }
 
