@@ -70,6 +70,11 @@ public class KafkaRestController extends CustomLogger {
         return LatencyCalculator.printStats();
     }
 
+    /**
+     * This class is the end point which calls for the new streams and a new consumer to output the result using a scheduler
+     * The topic is created dynamically as it needs to be distinct for multiple queries to run at the same time.
+     * @param query tells us the specified query
+     */
     @GetMapping("/getEventsInTopic")
     public void getAllRequiredEvents(@RequestBody Query query){
         StringBuilder eventTopic = new StringBuilder(TopicEnum.TOPIC.getTopicName());
