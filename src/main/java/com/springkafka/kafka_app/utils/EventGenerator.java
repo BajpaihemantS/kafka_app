@@ -1,7 +1,6 @@
 package com.springkafka.kafka_app.utils;
 
 import com.springkafka.kafka_app.event.Event;
-import com.springkafka.kafka_app.wrapper.ExecutorServiceWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,7 @@ public class EventGenerator {
             Object value = generateValue();
             event.setMapKeyValue(key, value);
         }
-        int check = random.nextInt(1);
+        int check = random.nextInt(2);
         event.setMapKeyValue("name","Hemant");
         event.setMapKeyValue("timestamp",System.currentTimeMillis());
 //        if(check==1){

@@ -1,6 +1,5 @@
 package com.springkafka.kafka_app.utils.calculator;
 
-import org.apache.kafka.common.protocol.types.Field;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,7 +12,7 @@ public class LatencyCalculator {
     private static long MAX_LATENCY = Long.MIN_VALUE;
     private static final AtomicLong TOTAL_LATENCY = new AtomicLong(0);
     private static final AtomicLong TOTAL_RECORDS = new AtomicLong(0);
-    private static Map<Long, AtomicInteger> frequencyMap = new ConcurrentHashMap<>();
+    private final static Map<Long, AtomicInteger> frequencyMap = new ConcurrentHashMap<>();
     private static long modLatency = 0;
     private static long highestLatencyCount = 0;
 

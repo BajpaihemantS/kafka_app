@@ -12,7 +12,6 @@ import com.springkafka.kafka_app.wrapper.CustomLogger;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
-import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStream;
@@ -23,9 +22,7 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 @Service
 public class KafkaStreamsService extends CustomLogger {
@@ -35,6 +32,7 @@ public class KafkaStreamsService extends CustomLogger {
     public KafkaStreamsService() {
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
+
     public Properties getProperties(String topic){
         Properties properties = new Properties();
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, topic);
@@ -45,9 +43,14 @@ public class KafkaStreamsService extends CustomLogger {
         return properties;
     }
 
-
-
     public void getFilteredStream(Query query, String topic){
+
+//        if(kafkaStreams!=null){
+//            kafkaStreams.close();
+//            kafkaStreams.cleanUp();
+//            info("the stream has stopped and output topic has been deleted");
+//        }
+
         StreamsBuilder streamsBuilder = new StreamsBuilder();
         Properties config = getProperties(topic);
 
@@ -56,13 +59,26 @@ public class KafkaStreamsService extends CustomLogger {
 
         KStream<String, Event> inputStream = streamsBuilder.stream(TopicEnum.TOPIC.getTopicName());
 
-        KStream<String ,Event> timeFilterStream = inputStream
+
+        KStream<String ,Event> timeAndEventFilterStream = inputStream
                 .filter((key,event) -> {
-                    long eventTime = Long.valueOf(event.getMapKeyValue("eventTime").toString());
+                    info("this is the result of the query ");
+                    long eventTime = Long.parseLong(event.getMapKeyValue("timestamp").toString());
                     return eventTime>=startTime && eventTime<=endTime;
+                })
+                .filter((key, event) -> {
+                    for(AttributeType attributeType : query.getAttributeTypeList()){
+                        String eventAttributeType = attributeType.getType();
+                        for(Attribute attribute : attributeType.getAttributeList()){
+                            if(attribute.getValue().equals(event.getMapKeyValue(eventAttributeType))){
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
                 });
 
-        KTable<String, Map<String, Integer>> userAttributeCountTable = timeFilterStream
+        KTable<String, Map<String, Integer>> userAttributeCountTable = timeAndEventFilterStream
                 .groupBy((key,event) -> event.getMapKeyValue("name").toString())
                 .aggregate(
                         HashMap::new,
@@ -80,26 +96,30 @@ public class KafkaStreamsService extends CustomLogger {
                         Materialized.<String, Map<String, Integer>, KeyValueStore<Bytes, byte[]>>as(
                                 ServiceProperties.ATTRIBUTE_COUNT_STORE).withKeySerde(Serdes.String()).withValueSerde(new HashMapSerde()).withLoggingDisabled()
 
-                )
-                .filter((user, attributeCount) -> {
-                    for(AttributeType attributeType : query.getAttributeTypeList()){
-                        for(Attribute attribute : attributeType.getAttributeList()){
-                            String attributeValue = attribute.getValue();
-                            Integer count = attribute.getCount();
-                            info("the count given is {} and the gotten count is {}",count,attributeCount.getOrDefault(attributeValue,0));
-                            if(attributeCount.getOrDefault(attributeValue,0)<count) {
-                                return false;
-                            }
-                        }
-                    }
-                    return true;
-                });
+                );
 
-        KStream<String,String> outputStream = userAttributeCountTable
-                .toStream()
-                .map((user,attributeCount) -> KeyValue.pair(user,user));
+/**
+ *  the below is the filtering part where the filtering was happening in kafka streams itself
+ *  but this was not selected due to the error
+ */
+//                .filter((user, attributeCount) -> {
+//                    info("--------555--------");
+//                    for(AttributeType attributeType : query.getAttributeTypeList()){
+//                        for(Attribute attribute : attributeType.getAttributeList()){
+//                            String attributeValue = attribute.getValue();
+//                            Integer count = attribute.getCount();
+//                            if(attributeCount.getOrDefault(attributeValue,0)<count) {
+//                                return false;
+//                            }
+//                        }
+//                    }
+//                    return true;
+//                });
 
-        outputStream.to(topic, Produced.with(Serdes.String(),Serdes.String()));
+        KStream<String,Map<String, Integer>> outputStream = userAttributeCountTable
+                .toStream();
+
+        outputStream.to(topic, Produced.with(Serdes.String(), new HashMapSerde()));
 
         kafkaStreams = new KafkaStreams(streamsBuilder.build(), config);
         kafkaStreams.start();
@@ -111,7 +131,9 @@ public class KafkaStreamsService extends CustomLogger {
     }
 
     public void shutdown(){
-        kafkaStreams.close();
-        kafkaStreams.cleanUp();
+        if(kafkaStreams!=null){
+            kafkaStreams.close();
+            kafkaStreams.cleanUp();
+        }
     }
 }

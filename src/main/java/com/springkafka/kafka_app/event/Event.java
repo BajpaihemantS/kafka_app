@@ -2,10 +2,7 @@ package com.springkafka.kafka_app.event;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

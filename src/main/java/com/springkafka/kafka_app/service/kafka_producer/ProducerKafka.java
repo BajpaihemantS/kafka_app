@@ -26,17 +26,14 @@ import java.util.Properties;
 @Service
 public class ProducerKafka extends CustomLogger {
 
-    private ExecutorServiceWrapper executorServiceWrapper;
+    private final ExecutorServiceWrapper executorServiceWrapper;
 
-//    A constructor which initialised the executor service and sets the fixed thread count
     @Autowired
     public ProducerKafka(ExecutorServiceWrapper executorServiceWrapper) {
         this.executorServiceWrapper = executorServiceWrapper;
         executorServiceWrapper.setThreadCount(ServiceProperties.MAX_PRODUCER);
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
-
-//    This method produces a new producer with the required properties
 
     public Producer<String, Event> createProducer() {
         Properties props = new Properties();
@@ -47,7 +44,6 @@ public class ProducerKafka extends CustomLogger {
         return new KafkaProducer<>(props);
     }
 
-//    This method initiates the sending of event by the specified producer
     public void sendMessage(Event event, Producer<String, Event> producer) {
         String topic = TopicEnum.TOPIC.getTopicName();
         ProducerRecord<String, Event> record = new ProducerRecord<>(topic, event);
@@ -61,7 +57,6 @@ public class ProducerKafka extends CustomLogger {
         });
     }
 
-//    A runnable function which calls for the creation of a new producer and starts sending the event
     public Runnable sendTasks(Event event){
         return () -> {
             Producer<String, Event> producer = createProducer();
@@ -70,28 +65,17 @@ public class ProducerKafka extends CustomLogger {
         };
     }
 
-//    This runnable function calls for the creation a new producer in a new separate thread
-//    This also extracts a particular event from a list of events
-
     public Runnable createN_Producer(List<Event> eventList){
         return () -> {
             for(Event event : eventList){
                 try {
-//                    String data1 = ServiceProperties.objectmapper.writeValueAsString(data);
-//                    Event event = ServiceProperties.objectmapper.readValue(data1,Event.class);
                     executorServiceWrapper.submit(sendTasks(event));
-
-//                    executorServiceWrapper.stop();
-//                    Why is this error coming
-
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
         };
     }
-
-//    This method stops further thread from created and terminates the currently running threads
 
     public void shutdown(){
         executorServiceWrapper.stop();
