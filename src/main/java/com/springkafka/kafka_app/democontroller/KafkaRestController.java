@@ -5,20 +5,17 @@ import com.springkafka.kafka_app.event.Event;
 import com.springkafka.kafka_app.service.kafka_consumer.ConsumerKafka;
 import com.springkafka.kafka_app.service.kafka_producer.ProducerKafka;
 import com.springkafka.kafka_app.service.kafka_streams.KafkaStreamsService;
-import com.springkafka.kafka_app.service.kafka_streams.StreamsKafka;
 import com.springkafka.kafka_app.utils.*;
 import com.springkafka.kafka_app.utils.Query.Query;
 import com.springkafka.kafka_app.utils.calculator.LatencyCalculator;
 import com.springkafka.kafka_app.wrapper.CustomLogger;
 import com.springkafka.kafka_app.wrapper.ExecutorServiceWrapper;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
 import java.util.List;
 
 /**

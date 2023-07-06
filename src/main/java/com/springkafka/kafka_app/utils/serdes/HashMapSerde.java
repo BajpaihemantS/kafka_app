@@ -1,11 +1,9 @@
 package com.springkafka.kafka_app.utils.serdes;
 
-import com.springkafka.kafka_app.event.EventList;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serializer;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class HashMapSerde implements Serde<Map<String, Integer>> {

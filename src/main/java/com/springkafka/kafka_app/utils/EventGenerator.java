@@ -27,7 +27,7 @@ public class EventGenerator {
             Object value = generateValue();
             event.setMapKeyValue(key, value);
         }
-        int check = random.nextInt(2);
+        int check = random.nextInt(1);
         event.setMapKeyValue("name","Hemant");
         event.setMapKeyValue("timestamp",System.currentTimeMillis());
 //        if(check==1){
