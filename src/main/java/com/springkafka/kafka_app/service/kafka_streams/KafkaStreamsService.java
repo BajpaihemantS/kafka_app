@@ -62,7 +62,6 @@ public class KafkaStreamsService extends CustomLogger {
 
         KStream<String ,Event> timeAndEventFilterStream = inputStream
                 .filter((key,event) -> {
-                    info("this is the result of the query ");
                     long eventTime = Long.parseLong(event.getMapKeyValue("timestamp").toString());
                     return eventTime>=startTime && eventTime<=endTime;
                 })

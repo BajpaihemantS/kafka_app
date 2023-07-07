@@ -60,14 +60,17 @@ public class ConsumerKafka extends CustomLogger {
 
         while(true){
 
+            info("reached here ---444");
+
             ConsumerRecords<String, Map<String, Integer>> consumerRecords = consumer.poll(1000);
 
             if(consumerRecords.isEmpty()){
                 noMessageCount++;
                 info("no message received since {} seconds", noMessageCount);
-//                if(noMessageCount > ServiceProperties.MAX_NO_MESSAGE_FOUND_COUNT) {
-//                    stop(consumer);
-//                }
+                if(noMessageCount > ServiceProperties.MAX_NO_MESSAGE_FOUND_COUNT) {
+                    stop(consumer);
+                    break;
+                }
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e){
@@ -85,21 +88,21 @@ public class ConsumerKafka extends CustomLogger {
             consumerRecords.forEach(record -> {
                 info("Record value type is {} and the map received is {}", record.key(), record.value());
                 String user = record.key();
-                boolean queryCheck = checkQuery(record.value(),query);
-                boolean isUserPresent = userSet.contains(user);
-                info("the result for the query is {} and the result for map contains is {}", queryCheck, isUserPresent);
-                if(queryCheck && !isUserPresent){
-                    userSet.add(user);
-                    info("Users updated :- ");
-                    printUsers(userSet);
-                }
-                else if(!queryCheck && isUserPresent){
-                    userSet.remove(user);
-                    info("Users updated :- ");
-                    printUsers(userSet);
-                }
-                long latency = recordReceivedTime - record.timestamp();
-                LatencyCalculator.checkAndAddLatency(latency);
+//                boolean queryCheck = checkQuery(record.value(),query);
+//                boolean isUserPresent = userSet.contains(user);
+//                info("the result for the query is {} and the result for map contains is {}", queryCheck, isUserPresent);
+//                if(queryCheck && !isUserPresent){
+//                    userSet.add(user);
+//                    info("Users updated :- ");
+//                    printUsers(userSet);
+//                }
+//                else if(!queryCheck && isUserPresent){
+//                    userSet.remove(user);
+//                    info("Users updated :- ");
+//                    printUsers(userSet);
+//                }
+//                long latency = recordReceivedTime - record.timestamp();
+//                LatencyCalculator.checkAndAddLatency(latency);
             });
         }
     }
@@ -126,9 +129,14 @@ public class ConsumerKafka extends CustomLogger {
 
 
     public void consumeEvents(String topic, Query query, HashSet<String> users){
+        info("a new consumer is being created");
         Consumer<String,Map<String, Integer>> consumer = createConsumer(GroupEnum.GROUP.getGroupName(), topic);
         try {
+            info("reached here ---111");
             runConsumer(consumer, query, users);
+            info("reached here ---333");
+            stop(consumer);
+            info("reached here ---222");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

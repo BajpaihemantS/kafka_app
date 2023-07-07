@@ -30,11 +30,11 @@ public class Scheduler extends CustomLogger {
     public void startScheduling() {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
         HashSet<String> userSet = new HashSet<>();
-        scheduler.submit(() -> kafka_consumer.consumeEvents(outputTopic,query,userSet));
         scheduler.scheduleAtFixedRate(() -> startStreams(userSet), 0, 10, TimeUnit.SECONDS);
     }
 
     private void startStreams(HashSet<String> userSet) {
-        kafka_consumer.printUsers(userSet);
+        info("scheduling is starting");
+        kafka_consumer.consumeEvents(outputTopic,query,userSet);
     }
 }

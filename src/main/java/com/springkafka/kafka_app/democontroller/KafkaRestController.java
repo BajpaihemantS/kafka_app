@@ -77,15 +77,16 @@ public class KafkaRestController extends CustomLogger {
      */
     @GetMapping("/getEventsInTopic")
     public void getAllRequiredEvents(@RequestBody Query query){
-        StringBuilder eventTopic = new StringBuilder(TopicEnum.TOPIC.getTopicName());
-        for(AttributeType attributeType : query.getAttributeTypeList()){
-            for (Attribute attribute : attributeType.getAttributeList()){
-                eventTopic.append(attribute.getValue());
-            }
-        }
-        String outputTopic  = String.valueOf(eventTopic);
+//        StringBuilder eventTopic = new StringBuilder(TopicEnum.TOPIC.getTopicName());
+//        for(AttributeType attributeType : query.getAttributeTypeList()){
+//            for (Attribute attribute : attributeType.getAttributeList()){
+//                eventTopic.append(attribute.getValue());
+//            }
+//        }
+        String outputTopic  = TopicEnum.TOPIC1.getTopicName();
         topicList.add(outputTopic);
-        topicList.add(TopicEnum.TOPIC.getTopicName());
+//        topicList.add(TopicEnum.TOPIC.getTopicName());
+        kafkaTopicManager.createTopics(topicList);
         executorServiceWrapper.submit(kafkaStreamsService.startStreams(query,outputTopic));
         Scheduler scheduler = new Scheduler(kafka_consumer,query,outputTopic);
         executorServiceWrapper.submit(scheduler::startScheduling);
@@ -93,6 +94,7 @@ public class KafkaRestController extends CustomLogger {
 
     private void shutdown() {
         info("Initiating shutdown protocol. Killing all processes.......");
+        topicList.add(TopicEnum.TOPIC.getTopicName());
         kafkaTopicManager.deleteTopics(topicList);
     }
 }

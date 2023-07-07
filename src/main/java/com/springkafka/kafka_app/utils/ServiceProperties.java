@@ -11,7 +11,7 @@ public interface ServiceProperties  {
     Integer MAX_PRODUCER = 100;
     Integer MAX_CONSUMER = 1;
     Integer MAX_EVENTS = 1;
-    Integer MAX_NO_MESSAGE_FOUND_COUNT=30;
+    Integer MAX_NO_MESSAGE_FOUND_COUNT=4;
     ObjectMapper objectmapper = new ObjectMapper();
     String ATTRIBUTE_COUNT_STORE = "attributeValueStore";
     String USER_COUNT_STORE = "userCountStore";
