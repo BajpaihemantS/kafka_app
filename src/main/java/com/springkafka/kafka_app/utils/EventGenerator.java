@@ -6,6 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * This class generates random events which helps me in testing my code
+ */
+
+
 public class EventGenerator {
 
     private final Random random = new Random();
