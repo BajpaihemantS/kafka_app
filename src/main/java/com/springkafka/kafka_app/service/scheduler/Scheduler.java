@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * this is the scheduler which prints the current users which satisfy our query
@@ -27,14 +28,16 @@ public class Scheduler extends CustomLogger {
         this.outputTopic = outputTopic;
     }
 
-    public void startScheduling() {
+    public void startScheduling(AtomicInteger queryCount) {
+        int newQueryCount = queryCount.intValue();
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
         HashSet<String> userSet = new HashSet<>();
         scheduler.submit(() -> kafka_consumer.consumeEvents(outputTopic,query,userSet));
-        scheduler.scheduleAtFixedRate(() -> startStreams(userSet), 0, 10, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(() -> startStreams(userSet,newQueryCount), 0, 10, TimeUnit.SECONDS);
     }
 
-    private void startStreams(HashSet<String> userSet) {
+    private void startStreams(HashSet<String> userSet, int newQueryCount) {
+        info("Users satisfying the query-{} ", newQueryCount);
         kafka_consumer.printUsers(userSet);
     }
 }

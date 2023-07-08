@@ -3,6 +3,7 @@ package com.springkafka.kafka_app.service.kafka_consumer;
 import com.springkafka.kafka_app.utils.*;
 import com.springkafka.kafka_app.utils.Query.Attribute;
 import com.springkafka.kafka_app.utils.Query.AttributeType;
+import com.springkafka.kafka_app.utils.Query.Count;
 import com.springkafka.kafka_app.utils.Query.Query;
 import com.springkafka.kafka_app.utils.calculator.LatencyCalculator;
 import com.springkafka.kafka_app.utils.serdes.HashMapSerializerDeserializer;
@@ -16,10 +17,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  *
@@ -87,15 +85,12 @@ public class ConsumerKafka extends CustomLogger {
                 String user = record.key();
                 boolean queryCheck = checkQuery(record.value(),query);
                 boolean isUserPresent = userSet.contains(user);
-                info("the result for the query is {} and the result for map contains is {}", queryCheck, isUserPresent);
                 if(queryCheck && !isUserPresent){
                     userSet.add(user);
-                    info("Users updated :- ");
                     printUsers(userSet);
                 }
                 else if(!queryCheck && isUserPresent){
                     userSet.remove(user);
-                    info("Users updated :- ");
                     printUsers(userSet);
                 }
                 long latency = recordReceivedTime - record.timestamp();
@@ -107,10 +102,40 @@ public class ConsumerKafka extends CustomLogger {
     public boolean checkQuery(Map<String,Integer> userAttributeCount, Query query){
         for(AttributeType attributeType : query.getAttributeTypeList()){
             for(Attribute attribute : attributeType.getAttributeList()){
-                String attributeValue = attribute.getValue();
-                Integer count = attribute.getCount();
-                if(userAttributeCount.getOrDefault(attributeValue,0)!=count) {
-                    return false;
+                String attributeName = attribute.getValue();
+                Integer countValue = attribute.getCount().getValue();
+                String countRelation = attribute.getCount().getRelation();
+                Integer eventTypeCount = userAttributeCount.getOrDefault(attributeName,0);
+
+                switch (countRelation) {
+                    case "exact" -> {
+                        if (!Objects.equals(eventTypeCount, countValue)) {
+                            return false;
+                        }
+                    }
+                    case "gte" -> {
+                        if (eventTypeCount < countValue) {
+                            return false;
+                        }
+                    }
+                    case "lte" -> {
+                        if (eventTypeCount > countValue) {
+                            return false;
+                        }
+                    }
+                    case "gt" -> {
+                        if (eventTypeCount <= countValue) {
+                            return false;
+                        }
+                    }
+                    case "lt" -> {
+                        if (eventTypeCount >= countValue) {
+                            return false;
+                        }
+                    }
+                    default -> {
+                        throw new IllegalArgumentException("The relation given is not valid" + countRelation);
+                    }
                 }
             }
         }
@@ -118,7 +143,6 @@ public class ConsumerKafka extends CustomLogger {
     }
 
     public void printUsers(HashSet<String> userSet){
-        info("Users update :- ");
         for(String user : userSet){
             info(user);
         }

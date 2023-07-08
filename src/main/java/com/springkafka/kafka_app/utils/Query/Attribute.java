@@ -2,12 +2,12 @@ package com.springkafka.kafka_app.utils.Query;
 
 public class Attribute {
     String value;
-    Integer count;
+    Count count;
 
     public Attribute() {
     }
 
-    public Attribute(String value, Integer count) {
+    public Attribute(String value, Count count) {
         this.value = value;
         this.count = count;
     }
@@ -20,11 +20,11 @@ public class Attribute {
         this.value = value;
     }
 
-    public Integer getCount() {
+    public Count getCount() {
         return count;
     }
 
-    public void setCount(Integer count) {
+    public void setCount(Count count) {
         this.count = count;
     }
 }

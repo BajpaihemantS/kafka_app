@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -39,6 +40,8 @@ public class KafkaRestController extends CustomLogger {
     private final EventGenerator eventGenerator;
     private final KafkaStreamsService kafkaStreamsService;
     private final List<String> topicList;
+    private final AtomicInteger queryCount;
+
 
     @Autowired
     public KafkaRestController(ExecutorServiceWrapper executorServiceWrapper, KafkaTopicManager kafkaTopicManager, ConsumerKafka kafka_consumer, ProducerKafka kafka_producer, KafkaStreamsService kafkaStreamsService) {
@@ -50,6 +53,8 @@ public class KafkaRestController extends CustomLogger {
         eventGenerator = new EventGenerator();
         this.kafkaStreamsService = kafkaStreamsService;
         topicList = new ArrayList<>();
+        this.queryCount = new AtomicInteger();
+
         Runtime.getRuntime().addShutdownHook( new Thread(this::shutdown));
     }
 
@@ -77,18 +82,13 @@ public class KafkaRestController extends CustomLogger {
      */
     @GetMapping("/getEventsInTopic")
     public void getAllRequiredEvents(@RequestBody Query query){
-        StringBuilder eventTopic = new StringBuilder(TopicEnum.TOPIC.getTopicName());
-        for(AttributeType attributeType : query.getAttributeTypeList()){
-            for (Attribute attribute : attributeType.getAttributeList()){
-                eventTopic.append(attribute.getValue());
-            }
-        }
-        String outputTopic  = String.valueOf(eventTopic);
+        queryCount.incrementAndGet();
+        String outputTopic  = TopicEnum.TOPIC.getTopicName() + queryCount;
         topicList.add(outputTopic);
         topicList.add(TopicEnum.TOPIC.getTopicName());
         executorServiceWrapper.submit(kafkaStreamsService.startStreams(query,outputTopic));
         Scheduler scheduler = new Scheduler(kafka_consumer,query,outputTopic);
-        executorServiceWrapper.submit(scheduler::startScheduling);
+        executorServiceWrapper.submit(() ->scheduler.startScheduling(queryCount));
     }
 
     private void shutdown() {
