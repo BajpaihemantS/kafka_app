@@ -45,12 +45,6 @@ public class KafkaStreamsService extends CustomLogger {
 
     public void getFilteredStream(Query query, String topic){
 
-//        if(kafkaStreams!=null){
-//            kafkaStreams.close();
-//            kafkaStreams.cleanUp();
-//            info("the stream has stopped and output topic has been deleted");
-//        }
-
         StreamsBuilder streamsBuilder = new StreamsBuilder();
         Properties config = getProperties(topic);
 
@@ -62,7 +56,6 @@ public class KafkaStreamsService extends CustomLogger {
 
         KStream<String ,Event> timeAndEventFilterStream = inputStream
                 .filter((key,event) -> {
-                    info("this is the result of the query ");
                     long eventTime = Long.parseLong(event.getMapKeyValue("timestamp").toString());
                     return eventTime>=startTime && eventTime<=endTime;
                 })
@@ -99,7 +92,7 @@ public class KafkaStreamsService extends CustomLogger {
                 );
 
 /**
- *  the below is the filtering part where the filtering was happening in kafka streams itself
+ *  The below is the filtering part where the filtering was happening in kafka streams itself
  *  but this was not selected due to the error
  */
 //                .filter((user, attributeCount) -> {
