@@ -63,9 +63,14 @@ public class ConsumerKafka extends CustomLogger {
             if(consumerRecords.isEmpty()){
                 noMessageCount++;
                 info("no message received since {} seconds", noMessageCount);
-//                if(noMessageCount > ServiceProperties.MAX_NO_MESSAGE_FOUND_COUNT) {
-//                    stop(consumer);
-//                }
+/**
+ *   This commented out section was there to stop a consumer after a certain period of time
+ */
+//   if(noMessageCount > ServiceProperties.MAX_NO_MESSAGE_FOUND_COUNT) {
+//      stop(consumer);
+//   }
+
+
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e){
@@ -81,10 +86,13 @@ public class ConsumerKafka extends CustomLogger {
 
             long recordReceivedTime = System.currentTimeMillis();
             consumerRecords.forEach(record -> {
-                info("Record value type is {} and the map received is {}", record.key(), record.value());
+                info("Record value type is {} and the map received is {}", record.key(), record.value());  // This tells us the record recieved
                 String user = record.key();
                 boolean queryCheck = checkQuery(record.value(),query);
                 boolean isUserPresent = userSet.contains(user);
+
+// This portion continuously checks if user satisfies our query or not
+
                 if(queryCheck && !isUserPresent){
                     userSet.add(user);
                     printUsers(userSet);
