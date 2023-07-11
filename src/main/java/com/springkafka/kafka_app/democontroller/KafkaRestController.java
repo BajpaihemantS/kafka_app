@@ -61,6 +61,7 @@ public class KafkaRestController extends CustomLogger {
     @GetMapping("/producer")
     public void produceEvents() {
         List<Event> eventList = eventGenerator.generateNEvents(ServiceProperties.MAX_EVENTS);
+        topicList.add(TopicEnum.TOPIC.getTopicName());
         executorServiceWrapper.submit(kafka_producer.createN_Producer(eventList));
     }
 
@@ -84,8 +85,8 @@ public class KafkaRestController extends CustomLogger {
     public void getAllRequiredEvents(@RequestBody Query query){
         queryCount.incrementAndGet();
         String outputTopic  = TopicEnum.TOPIC.getTopicName() + queryCount;
+        info("the output topic name is {}",outputTopic);
         topicList.add(outputTopic);
-        topicList.add(TopicEnum.TOPIC.getTopicName());
         executorServiceWrapper.submit(kafkaStreamsService.startStreams(query,outputTopic));
         Scheduler scheduler = new Scheduler(kafka_consumer,query,outputTopic);
         executorServiceWrapper.submit(() ->scheduler.startScheduling(queryCount));

@@ -35,7 +35,7 @@ public class EventGenerator {
             event.setMapKeyValue(key, value);
         }
         User user = new User("kanpur", new AgeRange(0,100));
-        event.setMapKeyValue("user",user);
+        event.setMapKeyValue("userProperties",user);
         int check = random.nextInt(2);
         event.setMapKeyValue("name","Hemant");
         event.setMapKeyValue("timestamp",System.currentTimeMillis());

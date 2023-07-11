@@ -1,11 +1,9 @@
 package com.springkafka.kafka_app.service.kafka_consumer;
 
 import com.springkafka.kafka_app.utils.*;
-import com.springkafka.kafka_app.utils.Query.Attribute;
-import com.springkafka.kafka_app.utils.Query.AttributeType;
-import com.springkafka.kafka_app.utils.Query.Count;
 import com.springkafka.kafka_app.utils.Query.Query;
 import com.springkafka.kafka_app.utils.calculator.LatencyCalculator;
+import com.springkafka.kafka_app.utils.calculator.QueryCheckAndPrint;
 import com.springkafka.kafka_app.utils.serdes.HashMapSerializerDeserializer;
 import com.springkafka.kafka_app.wrapper.CustomLogger;
 import com.springkafka.kafka_app.wrapper.ExecutorServiceWrapper;
@@ -63,12 +61,6 @@ public class ConsumerKafka extends CustomLogger {
             if(consumerRecords.isEmpty()){
                 noMessageCount++;
                 info("no message received since {} seconds", noMessageCount);
-/**
- *   This commented out section was there to stop a consumer after a certain period of time
- */
-//   if(noMessageCount > ServiceProperties.MAX_NO_MESSAGE_FOUND_COUNT) {
-//      stop(consumer);
-//   }
 
 
                 try {
@@ -86,12 +78,10 @@ public class ConsumerKafka extends CustomLogger {
 
             long recordReceivedTime = System.currentTimeMillis();
             consumerRecords.forEach(record -> {
-                info("Record value type is {} and the map received is {}", record.key(), record.value());  // This tells us the record recieved
                 String user = record.key();
-                boolean queryCheck = checkQuery(record.value(),query);
-                boolean isUserPresent = userSet.contains(user);
 
-// This portion continuously checks if user satisfies our query or not
+                boolean queryCheck = QueryCheckAndPrint.checkQuery(record.value(),query,record.timestamp());
+                boolean isUserPresent = userSet.contains(user);
 
                 if(queryCheck && !isUserPresent){
                     userSet.add(user);
@@ -104,56 +94,6 @@ public class ConsumerKafka extends CustomLogger {
             });
         }
     }
-
-    public boolean checkQuery(Map<String,Integer> userAttributeCount, Query query){
-        for(AttributeType attributeType : query.getAttributeTypeList()){
-            for(Attribute attribute : attributeType.getAttributeList()){
-                String attributeName = attribute.getValue();
-                Integer countValue = attribute.getCount().getValue();
-                String countRelation = attribute.getCount().getRelation();
-                Integer eventTypeCount = userAttributeCount.getOrDefault(attributeName,0);
-
-                switch (countRelation) {
-                    case "exact" -> {
-                        if (!Objects.equals(eventTypeCount, countValue)) {
-                            return false;
-                        }
-                    }
-                    case "gte" -> {
-                        if (eventTypeCount < countValue) {
-                            return false;
-                        }
-                    }
-                    case "lte" -> {
-                        if (eventTypeCount > countValue) {
-                            return false;
-                        }
-                    }
-                    case "gt" -> {
-                        if (eventTypeCount <= countValue) {
-                            return false;
-                        }
-                    }
-                    case "lt" -> {
-                        if (eventTypeCount >= countValue) {
-                            return false;
-                        }
-                    }
-                    default -> {
-                        throw new IllegalArgumentException("The relation given is not valid" + countRelation);
-                    }
-                }
-            }
-        }
-        return true;
-    }
-
-    public void printUsers(HashSet<String> userSet){
-        for(String user : userSet){
-            info(user);
-        }
-    }
-
 
     public void consumeEvents(String topic, Query query, HashSet<String> users){
         Consumer<String,Map<String, Integer>> consumer = createConsumer(GroupEnum.GROUP.getGroupName(), topic);
@@ -170,10 +110,6 @@ public class ConsumerKafka extends CustomLogger {
                 executorServiceWrapper.submit(() ->consumeEvents(topic,query, new HashSet<>()));
             }
         };
-    }
-
-    public static void stop(Consumer<String, Map<String, Integer>> consumer){
-        consumer.close();
     }
 
     public void shutdown(){

@@ -20,7 +20,6 @@ import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.state.KeyValueStore;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -39,7 +38,6 @@ public class KafkaStreamsService extends CustomLogger {
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, ServiceProperties.KAFKA_BROKERS);
         properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, EventSerde.class);
-        properties.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG,0);
         return properties;
     }
 
@@ -48,34 +46,27 @@ public class KafkaStreamsService extends CustomLogger {
         StreamsBuilder streamsBuilder = new StreamsBuilder();
         Properties config = getProperties(topic);
 
-        long startTime = query.getTimestamp().getStartTime();
-        long endTime = query.getTimestamp().getEndTime();
-
         KStream<String, Event> inputStream = streamsBuilder.stream(TopicEnum.TOPIC.getTopicName());
 
         KStream<String ,Event> timeAndEventFilterStream = inputStream
-                .filter((key,event) -> {
-                    long eventTime = Long.parseLong(event.getMapKeyValue("timestamp").toString());
-                    return eventTime>=startTime && eventTime<=endTime;
-                })
                 .filter((key,event) -> {
                     boolean check = false;
                     if(query.getUser()==null){
                         return true;
                     }
-                    Object eventUser = event.getMapKeyValue("user");
+                    Object eventUser = event.getMapKeyValue(ServiceProperties.USER_PROPERTIES);
                     if(query.getUser().getAgeRange()==null){
                         query.getUser().setAgeRange(new AgeRange(0,100));
                     }
                     if(eventUser instanceof Map){
                         Map<String, Object> userMap = (Map<String, Object>) eventUser;
-                        Object eventUserLocation = userMap.getOrDefault("location", null);
+                        Object eventUserLocation = userMap.getOrDefault(ServiceProperties.LOCATION, null);
                         if(eventUserLocation!=null && query.getUser().getLocation()!=null){
                             eventUserLocation = eventUserLocation.toString();
                             String queryLocation = query.getUser().getLocation();
                             check = eventUserLocation.equals(queryLocation);
                         }
-                        int eventUserAge = Integer.parseInt(userMap.getOrDefault("age", 0).toString());
+                        int eventUserAge = Integer.parseInt(userMap.getOrDefault(ServiceProperties.AGE, 0).toString());
                         if(eventUserAge!=0 && query.getUser().getAgeRange()!=null){
                             int minAge = query.getUser().getAgeRange().getMinAge();
                             int maxAge = query.getUser().getAgeRange().getMaxAge();
@@ -103,7 +94,7 @@ public class KafkaStreamsService extends CustomLogger {
                 });
 
         KTable<String, Map<String, Integer>> userAttributeCountTable = timeAndEventFilterStream
-                .groupBy((key,event) -> event.getMapKeyValue("name").toString())
+                .groupBy((key,event) -> event.getMapKeyValue(ServiceProperties.NAME).toString())
                 .aggregate(
                         HashMap::new,
                         (user, event, aggregate) -> {
@@ -122,26 +113,9 @@ public class KafkaStreamsService extends CustomLogger {
 
                 );
 
-/**
- *  The below is the filtering part where the filtering was happening in kafka streams itself
- *  but this was not selected due to the error
- */
-//                .filter((user, attributeCount) -> {
-//                    info("--------555--------");
-//                    for(AttributeType attributeType : query.getAttributeTypeList()){
-//                        for(Attribute attribute : attributeType.getAttributeList()){
-//                            String attributeValue = attribute.getValue();
-//                            Integer count = attribute.getCount();
-//                            if(attributeCount.getOrDefault(attributeValue,0)<count) {
-//                                return false;
-//                            }
-//                        }
-//                    }
-//                    return true;
-//                });
-
         KStream<String,Map<String, Integer>> outputStream = userAttributeCountTable
                 .toStream();
+
 
         outputStream.to(topic, Produced.with(Serdes.String(), new HashMapSerde()));
 
