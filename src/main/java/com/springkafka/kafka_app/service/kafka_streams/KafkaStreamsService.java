@@ -28,7 +28,6 @@ import java.util.*;
 public class KafkaStreamsService extends CustomLogger {
     private KafkaStreams kafkaStreams;
 
-    @Autowired
     public KafkaStreamsService() {
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }

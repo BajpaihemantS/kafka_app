@@ -80,7 +80,7 @@ public class KafkaRestController extends CustomLogger {
      * The topic is created dynamically as it needs to be distinct for multiple queries to run at the same time.
      * @param query tells us the specified query
      */
-    @GetMapping("/getEventsInTopic")
+    @GetMapping("/getUsersFromQuery")
     public void getAllRequiredEvents(@RequestBody Query query){
         queryCount.incrementAndGet();
         String outputTopic  = TopicEnum.TOPIC.getTopicName() + queryCount;
