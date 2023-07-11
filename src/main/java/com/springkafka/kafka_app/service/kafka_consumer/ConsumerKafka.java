@@ -95,11 +95,9 @@ public class ConsumerKafka extends CustomLogger {
 
                 if(queryCheck && !isUserPresent){
                     userSet.add(user);
-                    printUsers(userSet);
                 }
                 else if(!queryCheck && isUserPresent){
                     userSet.remove(user);
-                    printUsers(userSet);
                 }
                 long latency = recordReceivedTime - record.timestamp();
                 LatencyCalculator.checkAndAddLatency(latency);

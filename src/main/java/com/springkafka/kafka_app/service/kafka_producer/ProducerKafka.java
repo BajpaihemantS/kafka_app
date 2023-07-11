@@ -49,7 +49,7 @@ public class ProducerKafka extends CustomLogger {
         ProducerRecord<String, Event> record = new ProducerRecord<>(topic, event);
         producer.send(record, (metadata, exception) -> {
             if (exception == null) {
-                info("Record sent to offset {} and Type is {} \n", metadata.offset(), record.value().getMapKeyValue("eventType"));
+                info("Record sent to offset {} and Type is {} and {} \n", metadata.offset(), record.value().getMapKeyValue("eventType"), record.value().getMapKeyValue("productId"));
             } else {
                 error("Record submission failed",exception);
                 exception.printStackTrace();

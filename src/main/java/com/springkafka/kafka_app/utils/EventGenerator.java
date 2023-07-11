@@ -1,6 +1,9 @@
 package com.springkafka.kafka_app.utils;
 
 import com.springkafka.kafka_app.event.Event;
+import com.springkafka.kafka_app.utils.Query.AgeRange;
+import com.springkafka.kafka_app.utils.Query.Location;
+import com.springkafka.kafka_app.utils.Query.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +34,8 @@ public class EventGenerator {
             Object value = generateValue();
             event.setMapKeyValue(key, value);
         }
+        User user = new User("kanpur", new AgeRange(0,100));
+        event.setMapKeyValue("user",user);
         int check = random.nextInt(2);
         event.setMapKeyValue("name","Hemant");
         event.setMapKeyValue("timestamp",System.currentTimeMillis());
@@ -44,7 +49,6 @@ public class EventGenerator {
 //        }
         if(check==1){
             event.setMapKeyValue("eventType","buy_now");
-            event.setMapKeyValue("productId","3");
         }
 //        else if(check==4){
 //            event.setMapKeyValue("eventType","sign_in");
@@ -52,6 +56,12 @@ public class EventGenerator {
 //        }
         else{
             event.setMapKeyValue("eventType","sign_out");
+        }
+        check = random.nextInt(2);
+        if(check==1){
+            event.setMapKeyValue("productId","3");
+        }
+        else{
             event.setMapKeyValue("productId","5");
         }
 //        else {

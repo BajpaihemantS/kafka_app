@@ -1,6 +1,7 @@
 package com.springkafka.kafka_app.service.kafka_streams;
 
 import com.springkafka.kafka_app.event.Event;
+import com.springkafka.kafka_app.utils.Query.AgeRange;
 import com.springkafka.kafka_app.utils.Query.Attribute;
 import com.springkafka.kafka_app.utils.Query.AttributeType;
 import com.springkafka.kafka_app.utils.Query.Query;
@@ -52,22 +53,53 @@ public class KafkaStreamsService extends CustomLogger {
 
         KStream<String, Event> inputStream = streamsBuilder.stream(TopicEnum.TOPIC.getTopicName());
 
-
         KStream<String ,Event> timeAndEventFilterStream = inputStream
                 .filter((key,event) -> {
                     long eventTime = Long.parseLong(event.getMapKeyValue("timestamp").toString());
                     return eventTime>=startTime && eventTime<=endTime;
                 })
+                .filter((key,event) -> {
+                    boolean check = false;
+                    if(query.getUser()==null){
+                        return true;
+                    }
+                    Object eventUser = event.getMapKeyValue("user");
+                    if(query.getUser().getAgeRange()==null){
+                        query.getUser().setAgeRange(new AgeRange(0,100));
+                    }
+                    if(eventUser instanceof Map){
+                        Map<String, Object> userMap = (Map<String, Object>) eventUser;
+                        Object eventUserLocation = userMap.getOrDefault("location", null);
+                        if(eventUserLocation!=null && query.getUser().getLocation()!=null){
+                            eventUserLocation = eventUserLocation.toString();
+                            String queryLocation = query.getUser().getLocation();
+                            check = eventUserLocation.equals(queryLocation);
+                        }
+                        int eventUserAge = Integer.parseInt(userMap.getOrDefault("age", 0).toString());
+                        if(eventUserAge!=0 && query.getUser().getAgeRange()!=null){
+                            int minAge = query.getUser().getAgeRange().getMinAge();
+                            int maxAge = query.getUser().getAgeRange().getMaxAge();
+                            check = eventUserAge >= minAge && eventUserAge <= maxAge;
+                        }
+                    }
+
+                    return check;
+
+                })
                 .filter((key, event) -> {
                     for(AttributeType attributeType : query.getAttributeTypeList()){
                         String eventAttributeType = attributeType.getType();
+                        boolean check = false;
                         for(Attribute attribute : attributeType.getAttributeList()){
                             if(attribute.getValue().equals(event.getMapKeyValue(eventAttributeType))){
-                                return true;
+                                check = true;
                             }
                         }
+                        if(!check){
+                            return false;
+                        }
                     }
-                    return false;
+                    return true;
                 });
 
         KTable<String, Map<String, Integer>> userAttributeCountTable = timeAndEventFilterStream
