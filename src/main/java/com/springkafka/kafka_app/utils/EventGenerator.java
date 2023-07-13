@@ -34,10 +34,12 @@ public class EventGenerator {
             Object value = generateValue();
             event.setMapKeyValue(key, value);
         }
+        String key = "name";
+        String value = generateRandomString(5);
+        event.setMapKeyValue(key,value);
         User user = new User("kanpur", new AgeRange(0,100));
         event.setMapKeyValue("userProperties",user);
         int check = random.nextInt(2);
-        event.setMapKeyValue("name","Hemant");
         event.setMapKeyValue("timestamp",System.currentTimeMillis());
 //        if(check==1){
 //            event.setMapKeyValue("eventType","add_to_wishlist");
@@ -81,17 +83,25 @@ public class EventGenerator {
         return sb.toString();
     }
 
+    private static String generateRandomString(int length) {
+        String characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        StringBuilder sb = new StringBuilder(length);
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(characters.length());
+            char randomChar = characters.charAt(index);
+            sb.append(randomChar);
+        }
+        return sb.toString();
+    }
+
     public Object generateValue(){
         int valueType = random.nextInt(3);
-        switch (valueType) {
-            case 0:
-                return generateKey();
-            case 1:
-                return random.nextInt(100);
-            case 2:
-                return random.nextBoolean();
-            default:
-                return null;
-        }
+        return switch (valueType) {
+            case 0 -> generateKey();
+            case 1 -> random.nextInt(100);
+            case 2 -> random.nextBoolean();
+            default -> null;
+        };
     }
 }

@@ -6,10 +6,10 @@ import org.apache.kafka.common.serialization.Serializer;
 
 import java.util.Map;
 
-public class HashMapSerde implements Serde<Map<String, Integer>> {
+public class HashMapSerde implements Serde<Map<String, Long>> {
 
-    private final Serializer<Map<String, Integer>> serializer;
-    private final Deserializer<Map<String, Integer>> deserializer;
+    private final Serializer<Map<String, Long>> serializer;
+    private final Deserializer<Map<String, Long>> deserializer;
 
     public HashMapSerde() {
         this.serializer = new HashMapSerializerDeserializer();
@@ -27,12 +27,12 @@ public class HashMapSerde implements Serde<Map<String, Integer>> {
     }
 
     @Override
-    public Serializer<Map<String, Integer>> serializer() {
+    public Serializer<Map<String, Long>> serializer() {
         return serializer;
     }
 
     @Override
-    public Deserializer<Map<String, Integer>> deserializer() {
+    public Deserializer<Map<String, Long>> deserializer() {
         return deserializer;
     }
 }

@@ -15,7 +15,7 @@ public interface ServiceProperties  {
     String OFFSET_RESET_LATEST="latest";
     String OFFSET_RESET_EARLIER="earliest";
     Integer MAX_POLL_RECORDS=1;
-    Integer MAX_PRODUCER = 100;
+    Integer MAX_PRODUCER = 1000;
     Integer MAX_CONSUMER = 1;
     Integer MAX_EVENTS = 10;
     Integer MAX_NO_MESSAGE_FOUND_COUNT=30;

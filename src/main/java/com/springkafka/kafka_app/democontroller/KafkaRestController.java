@@ -90,6 +90,7 @@ public class KafkaRestController extends CustomLogger {
         executorServiceWrapper.submit(kafkaStreamsService.startStreams(query,outputTopic));
         Scheduler scheduler = new Scheduler(kafka_consumer,query,outputTopic);
         executorServiceWrapper.submit(() ->scheduler.startScheduling(queryCount));
+
     }
 
     private void shutdown() {

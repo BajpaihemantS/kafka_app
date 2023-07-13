@@ -27,7 +27,6 @@ import java.util.*;
 @Service
 public class KafkaStreamsService extends CustomLogger {
     private KafkaStreams kafkaStreams;
-
     public KafkaStreamsService() {
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
@@ -40,6 +39,7 @@ public class KafkaStreamsService extends CustomLogger {
         properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, EventSerde.class);
         return properties;
     }
+
 
     public void getFilteredStream(Query query, String topic){
 
@@ -93,29 +93,30 @@ public class KafkaStreamsService extends CustomLogger {
                     return true;
                 });
 
-        KTable<String, Map<String, Integer>> userAttributeCountTable = timeAndEventFilterStream
+        KTable<String, Map<String, Long>> userAttributeCountTable = timeAndEventFilterStream
                 .groupBy((key,event) -> event.getMapKeyValue(ServiceProperties.NAME).toString())
                 .aggregate(
                         HashMap::new,
                         (user, event, aggregate) -> {
+//                            aggregate.put(ServiceProperties.TIMESTAMP,System.currentTimeMillis());
                             for(AttributeType attributeType : query.getAttributeTypeList()) {
                                 String eventAttributeType = attributeType.getType();
                                 String eventAttributeValue = event.getMapKeyValue(eventAttributeType).toString();
-                                Integer currentValue = aggregate.getOrDefault(eventAttributeValue,0);
+                                Long currentValue = aggregate.getOrDefault(eventAttributeValue,0L);
                                 currentValue++;
 
                                 aggregate.put(eventAttributeValue,currentValue);
                             }
                             return aggregate;
                         },
-                        Materialized.<String, Map<String, Integer>, KeyValueStore<Bytes, byte[]>>as(
+                        Materialized.<String, Map<String, Long>, KeyValueStore<Bytes, byte[]>>as(
                                 ServiceProperties.ATTRIBUTE_COUNT_STORE).withKeySerde(Serdes.String()).withValueSerde(new HashMapSerde()).withLoggingDisabled()
 
                 );
 
-        KStream<String,Map<String, Integer>> outputStream = userAttributeCountTable
+        KStream<String,Map<String, Long>> outputStream = userAttributeCountTable
                 .toStream();
-
+//                .peek((key,value) -> info("the user is {} and the value is {}", key, value));
 
         outputStream.to(topic, Produced.with(Serdes.String(), new HashMapSerde()));
 

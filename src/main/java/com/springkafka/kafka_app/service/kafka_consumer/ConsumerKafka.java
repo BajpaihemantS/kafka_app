@@ -12,6 +12,8 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +36,7 @@ public class ConsumerKafka extends CustomLogger {
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
 
-    public Consumer<String, Map<String, Integer>> createConsumer(String groupId, String topic) {
+    public Consumer<String, Map<String, Long>> createConsumer(String groupId, String topic) {
         final Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, ServiceProperties.KAFKA_BROKERS);
         props.put(ConsumerConfig.GROUP_ID_CONFIG,groupId);
@@ -44,25 +46,23 @@ public class ConsumerKafka extends CustomLogger {
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, ServiceProperties.OFFSET_RESET_EARLIER);
 
-        final Consumer<String, Map<String, Integer>> consumer = new KafkaConsumer<>(props);
+        final Consumer<String, Map<String, Long>> consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Collections.singletonList(topic));
         return consumer;
     }
 
 
-    public void runConsumer(Consumer<String, Map<String, Integer>> consumer, Query query, HashSet<String> userSet) throws InterruptedException {
+    public void runConsumer(Consumer<String, Map<String, Long>> consumer, Query query, HashSet<String> userSet) throws InterruptedException {
 
         int noMessageCount=1;
 
         while(true){
 
-            ConsumerRecords<String, Map<String, Integer>> consumerRecords = consumer.poll(1000);
+            ConsumerRecords<String, Map<String, Long>> consumerRecords = consumer.poll(1000);
 
             if(consumerRecords.isEmpty()){
                 noMessageCount++;
                 info("no message received since {} seconds", noMessageCount);
-
-
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e){
@@ -79,8 +79,17 @@ public class ConsumerKafka extends CustomLogger {
             long recordReceivedTime = System.currentTimeMillis();
             consumerRecords.forEach(record -> {
                 String user = record.key();
+                Map<String,Long> userMap = record.value();
+                info("The map is {}",userMap);
+                info("---454545---");
+                Long eventValue = record.value().get("sign_out");
+                info("---232323--- {}", eventValue);
+                info("---454545---");
 
-                boolean queryCheck = QueryCheckAndPrint.checkQuery(record.value(),query,record.timestamp());
+//                info("the received record is {} and {}", user, record.value());
+
+                boolean queryCheck = QueryCheckAndPrint.checkQuery(userMap,query,record.timestamp());
+                info("reached here after the query check");
                 boolean isUserPresent = userSet.contains(user);
 
                 if(queryCheck && !isUserPresent){
@@ -89,14 +98,21 @@ public class ConsumerKafka extends CustomLogger {
                 else if(!queryCheck && isUserPresent){
                     userSet.remove(user);
                 }
-                long latency = recordReceivedTime - record.timestamp();
+
+                long latency = recordReceivedTime - record.value().get(ServiceProperties.TIMESTAMP);
                 LatencyCalculator.checkAndAddLatency(latency);
             });
         }
     }
 
+    public void printUsers(HashSet<String> userSet){
+        for(String user : userSet){
+            info(user);
+        }
+    }
+
     public void consumeEvents(String topic, Query query, HashSet<String> users){
-        Consumer<String,Map<String, Integer>> consumer = createConsumer(GroupEnum.GROUP.getGroupName(), topic);
+        Consumer<String,Map<String, Long>> consumer = createConsumer(GroupEnum.GROUP.getGroupName(), topic);
         try {
             runConsumer(consumer, query, users);
         } catch (InterruptedException e) {
