@@ -20,31 +20,16 @@ public class QueryCheckAndPrint extends CustomLogger {
 
         boolean timeCheck = eventTime>=startTime && eventTime<=endTime;
 
-        System.out.println("---111---");
-
-
         for(AttributeType attributeType : query.getAttributeTypeList()){
             for(Attribute attribute : attributeType.getAttributeList()){
                 String attributeName = attribute.getValue();
-                System.out.println("---333---");
                 if(attribute.getCount()==null){
                     continue;
                 }
-                System.out.println("---444---");
                 Long countValue = attribute.getCount().getValue();
-                System.out.println("---4.14.14.1---");
                 String countRelation = attribute.getCount().getRelation();
-                System.out.println("---4.24.24.2--- " + attributeName);
 
-                Long eventTypeCount;
-                if(userAttributeCount.containsKey(attributeName)){
-                    eventTypeCount = userAttributeCount.get(attributeName);
-                }
-                else{
-                    eventTypeCount = 1L;
-                }
-                System.out.println(eventTypeCount);
-                System.out.println("---555----");
+                Long eventTypeCount = userAttributeCount.get(attributeName);
 
                 switch (countRelation) {
                     case "exact" -> {
@@ -69,7 +54,6 @@ public class QueryCheckAndPrint extends CustomLogger {
                     }
                     case "lt" -> {
                         if (eventTypeCount >= countValue) {
-                            System.out.println("the count required is " + countValue + " and the count given is " + eventTypeCount);
                             return false;
                         }
                     }
@@ -78,8 +62,13 @@ public class QueryCheckAndPrint extends CustomLogger {
             }
         }
 
-        System.out.println("---222---" + timeCheck);
         return timeCheck;
     }
 
+    public static void printUsers(HashSet<String> userSet){
+        Logger logger = LoggerFactory.getLogger(org.slf4j.Logger.class);
+        for(String user : userSet){
+            logger.info(user);
+        }
+    }
 }

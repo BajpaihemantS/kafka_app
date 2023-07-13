@@ -98,7 +98,6 @@ public class KafkaStreamsService extends CustomLogger {
                 .aggregate(
                         HashMap::new,
                         (user, event, aggregate) -> {
-//                            aggregate.put(ServiceProperties.TIMESTAMP,System.currentTimeMillis());
                             for(AttributeType attributeType : query.getAttributeTypeList()) {
                                 String eventAttributeType = attributeType.getType();
                                 String eventAttributeValue = event.getMapKeyValue(eventAttributeType).toString();
@@ -116,7 +115,6 @@ public class KafkaStreamsService extends CustomLogger {
 
         KStream<String,Map<String, Long>> outputStream = userAttributeCountTable
                 .toStream();
-//                .peek((key,value) -> info("the user is {} and the value is {}", key, value));
 
         outputStream.to(topic, Produced.with(Serdes.String(), new HashMapSerde()));
 

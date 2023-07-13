@@ -12,8 +12,6 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -79,17 +77,8 @@ public class ConsumerKafka extends CustomLogger {
             long recordReceivedTime = System.currentTimeMillis();
             consumerRecords.forEach(record -> {
                 String user = record.key();
-                Map<String,Long> userMap = record.value();
-                info("The map is {}",userMap);
-                info("---454545---");
-                Long eventValue = record.value().get("sign_out");
-                info("---232323--- {}", eventValue);
-                info("---454545---");
 
-//                info("the received record is {} and {}", user, record.value());
-
-                boolean queryCheck = QueryCheckAndPrint.checkQuery(userMap,query,record.timestamp());
-                info("reached here after the query check");
+                boolean queryCheck = QueryCheckAndPrint.checkQuery(record.value(),query,record.timestamp());
                 boolean isUserPresent = userSet.contains(user);
 
                 if(queryCheck && !isUserPresent){
@@ -98,16 +87,9 @@ public class ConsumerKafka extends CustomLogger {
                 else if(!queryCheck && isUserPresent){
                     userSet.remove(user);
                 }
-
-                long latency = recordReceivedTime - record.value().get(ServiceProperties.TIMESTAMP);
+                long latency = recordReceivedTime - record.timestamp();
                 LatencyCalculator.checkAndAddLatency(latency);
             });
-        }
-    }
-
-    public void printUsers(HashSet<String> userSet){
-        for(String user : userSet){
-            info(user);
         }
     }
 
