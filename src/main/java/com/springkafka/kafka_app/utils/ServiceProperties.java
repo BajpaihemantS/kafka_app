@@ -2,7 +2,10 @@ package com.springkafka.kafka_app.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.UUID;
+/**
+ * This was the class which contains the configuration properties
+ * and the values of the constants
+ */
 
 public interface ServiceProperties  {
     String KAFKA_BROKERS = "localhost:9092";
@@ -17,11 +20,10 @@ public interface ServiceProperties  {
     Integer MAX_POLL_RECORDS=1;
     Integer MAX_PRODUCER = 1000;
     Integer MAX_CONSUMER = 1;
-    Integer MAX_EVENTS = 10;
+    Integer MAX_EVENTS = 100;
     Integer MAX_NO_MESSAGE_FOUND_COUNT=30;
     ObjectMapper objectmapper = new ObjectMapper();
     String ATTRIBUTE_COUNT_STORE = "attributeValueStore";
-    String USER_COUNT_STORE = "userCountStore";
 
 }
 

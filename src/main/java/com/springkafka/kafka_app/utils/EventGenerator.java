@@ -2,7 +2,6 @@ package com.springkafka.kafka_app.utils;
 
 import com.springkafka.kafka_app.event.Event;
 import com.springkafka.kafka_app.utils.Query.AgeRange;
-import com.springkafka.kafka_app.utils.Query.Location;
 import com.springkafka.kafka_app.utils.Query.User;
 
 import java.util.ArrayList;
@@ -10,7 +9,8 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * This class generates random events which helps me in testing my code
+ * This class generates random events which helps me in testing my code.
+ * This generates random values for the incoming event.
  */
 
 
@@ -66,10 +66,6 @@ public class EventGenerator {
         else{
             event.setMapKeyValue("productId","5");
         }
-//        else {
-//            event.setMapKeyValue("eventType","loan_home");
-//            event.setMapKeyValue("productId","6");
-//        }
         return event;
     }
 

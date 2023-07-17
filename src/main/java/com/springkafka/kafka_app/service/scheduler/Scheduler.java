@@ -2,11 +2,10 @@ package com.springkafka.kafka_app.service.scheduler;
 
 import com.springkafka.kafka_app.service.kafka_consumer.ConsumerKafka;
 import com.springkafka.kafka_app.utils.Query.Query;
-import com.springkafka.kafka_app.utils.calculator.QueryCheckAndPrint;
+import com.springkafka.kafka_app.utils.calculator.QueryCheckAndPrintUsers;
 import com.springkafka.kafka_app.wrapper.CustomLogger;
-import com.springkafka.kafka_app.wrapper.ExecutorServiceWrapper;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -29,16 +28,16 @@ public class Scheduler extends CustomLogger {
         this.outputTopic = outputTopic;
     }
 
-    public void startScheduling(AtomicInteger queryCount) {
-        int newQueryCount = queryCount.intValue();
+    public void startScheduling(AtomicInteger newQueryCount) {
+        int queryCount = newQueryCount.intValue();
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
-        HashSet<String> userSet = new HashSet<>();
-        scheduler.submit(() -> kafka_consumer.consumeEvents(outputTopic,query,userSet));
-        scheduler.scheduleAtFixedRate(() -> startStreams(userSet,newQueryCount), 0, 10, TimeUnit.SECONDS);
+        HashMap<String,Long> userLatestTimeMap = new HashMap<>();
+        scheduler.submit(() -> kafka_consumer.consumeEvents(outputTopic,query,userLatestTimeMap));
+        scheduler.scheduleAtFixedRate(() -> startStreams(userLatestTimeMap,queryCount), 0, 10, TimeUnit.SECONDS);
     }
 
-    private void startStreams(HashSet<String> userSet, int newQueryCount) {
-        info("Users satisfying the query-{} ", newQueryCount);
-        QueryCheckAndPrint.printUsers(userSet);
+    private void startStreams(HashMap<String,Long> userLatestTimeMap, int queryCount) {
+        info("Users satisfying the query-{} ", queryCount);
+        QueryCheckAndPrintUsers.printUsers(userLatestTimeMap,query);
     }
 }

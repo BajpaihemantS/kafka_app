@@ -1,17 +1,17 @@
 package com.springkafka.kafka_app.democontroller;
 
-import com.springkafka.kafka_app.config.KafkaTopicManager;
-import com.springkafka.kafka_app.event.Event;
 import com.springkafka.kafka_app.service.kafka_consumer.ConsumerKafka;
 import com.springkafka.kafka_app.service.kafka_producer.ProducerKafka;
+import com.springkafka.kafka_app.utils.EventGenerator;
+import com.springkafka.kafka_app.utils.ServiceProperties;
+import com.springkafka.kafka_app.utils.TopicEnum;
+import com.springkafka.kafka_app.wrapper.CustomLogger;
+import com.springkafka.kafka_app.config.KafkaTopicManager;
+import com.springkafka.kafka_app.event.Event;
 import com.springkafka.kafka_app.service.kafka_streams.KafkaStreamsService;
 import com.springkafka.kafka_app.service.scheduler.Scheduler;
-import com.springkafka.kafka_app.utils.*;
-import com.springkafka.kafka_app.utils.Query.Attribute;
-import com.springkafka.kafka_app.utils.Query.AttributeType;
 import com.springkafka.kafka_app.utils.Query.Query;
 import com.springkafka.kafka_app.utils.calculator.LatencyCalculator;
-import com.springkafka.kafka_app.wrapper.CustomLogger;
 import com.springkafka.kafka_app.wrapper.ExecutorServiceWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -83,9 +83,8 @@ public class KafkaRestController extends CustomLogger {
      */
     @GetMapping("/getUsersFromQuery")
     public void getAllRequiredEvents(@RequestBody Query query){
-        queryCount.incrementAndGet();
-        String outputTopic  = TopicEnum.TOPIC.getTopicName() + queryCount;
-        info("the output topic name is {}",outputTopic);
+        queryCount.incrementAndGet(); // this tells us the exact query number
+        String outputTopic  = TopicEnum.TOPIC.getTopicName() + queryCount; // Here a new output topic name is generated depending upon the query number
         topicList.add(outputTopic);
         executorServiceWrapper.submit(kafkaStreamsService.startStreams(query,outputTopic));
         Scheduler scheduler = new Scheduler(kafka_consumer,query,outputTopic);
@@ -94,7 +93,7 @@ public class KafkaRestController extends CustomLogger {
 
     private void shutdown() {
         info("Initiating shutdown protocol. Killing all processes.......");
-        kafkaTopicManager.deleteTopics(topicList);
+        kafkaTopicManager.deleteTopics(topicList); // This will delete all the topics which have been created
     }
 }
 

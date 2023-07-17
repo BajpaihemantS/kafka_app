@@ -1,22 +1,22 @@
 package com.springkafka.kafka_app.utils.Query;
 
 public class Count {
-    private long value;
+    private int value;
     private String relation;
 
     public Count() {
     }
 
-    public Count(long value, String relation) {
+    public Count(int value, String relation) {
         this.value = value;
         this.relation = relation;
     }
 
-    public long getValue() {
+    public int getValue() {
         return value;
     }
 
-    public void setValue(long value) {
+    public void setValue(int value) {
         this.value = value;
     }
 

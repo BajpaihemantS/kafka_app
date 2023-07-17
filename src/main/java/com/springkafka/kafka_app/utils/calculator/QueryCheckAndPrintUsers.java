@@ -1,24 +1,17 @@
 package com.springkafka.kafka_app.utils.calculator;
 
+import com.springkafka.kafka_app.wrapper.CustomLogger;
 import com.springkafka.kafka_app.utils.Query.Attribute;
 import com.springkafka.kafka_app.utils.Query.AttributeType;
 import com.springkafka.kafka_app.utils.Query.Query;
-import com.springkafka.kafka_app.wrapper.CustomLogger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class QueryCheckAndPrint extends CustomLogger {
+public class QueryCheckAndPrintUsers extends CustomLogger {
 
-    public static boolean checkQuery(Map<String,Long> userAttributeCount, Query query, long eventTime) {
-
-        long startTime = query.getTimestamp().getStartTime();
-        long endTime = query.getTimestamp().getEndTime();
-
-        boolean timeCheck = eventTime>=startTime && eventTime<=endTime;
+    public static boolean checkQuery(Map<String,Integer> userAttributeCount, Query query) {
 
         for(AttributeType attributeType : query.getAttributeTypeList()){
             for(Attribute attribute : attributeType.getAttributeList()){
@@ -26,10 +19,10 @@ public class QueryCheckAndPrint extends CustomLogger {
                 if(attribute.getCount()==null){
                     continue;
                 }
-                Long countValue = attribute.getCount().getValue();
+                Integer countValue = attribute.getCount().getValue();
                 String countRelation = attribute.getCount().getRelation();
 
-                Long eventTypeCount = userAttributeCount.get(attributeName);
+                Integer eventTypeCount = userAttributeCount.get(attributeName);
 
                 switch (countRelation) {
                     case "exact" -> {
@@ -62,13 +55,20 @@ public class QueryCheckAndPrint extends CustomLogger {
             }
         }
 
-        return timeCheck;
+        return true;
     }
 
-    public static void printUsers(HashSet<String> userSet){
-        Logger logger = LoggerFactory.getLogger(org.slf4j.Logger.class);
-        for(String user : userSet){
-            logger.info(user);
-        }
+    public static void printUsers(HashMap<String,Long> userMap, Query query){
+
+        long queryStartTime = query.getTimestamp().getStartTime();
+        long queryEndTime = query.getTimestamp().getEndTime();
+
+        userMap.forEach((user,eventTime) -> {
+            boolean timeCheck = eventTime>=queryStartTime && eventTime<=queryEndTime;
+            if(timeCheck){
+                info(user);
+            }
+        });
+
     }
 }

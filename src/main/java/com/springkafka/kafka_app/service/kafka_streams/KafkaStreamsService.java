@@ -10,6 +10,8 @@ import com.springkafka.kafka_app.utils.TopicEnum;
 import com.springkafka.kafka_app.utils.serdes.EventSerde;
 import com.springkafka.kafka_app.utils.serdes.HashMapSerde;
 import com.springkafka.kafka_app.wrapper.CustomLogger;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.core.instrument.Timer;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -22,11 +24,18 @@ import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class KafkaStreamsService extends CustomLogger {
     private KafkaStreams kafkaStreams;
+    private static final  Timer streamsLatencyCalculator = Timer.builder("record_stream_latency")
+            .register(Metrics.globalRegistry);
+
     public KafkaStreamsService() {
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
@@ -37,6 +46,7 @@ public class KafkaStreamsService extends CustomLogger {
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, ServiceProperties.KAFKA_BROKERS);
         properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, EventSerde.class);
+        properties.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG,0);
         return properties;
     }
 
@@ -50,7 +60,7 @@ public class KafkaStreamsService extends CustomLogger {
 
         KStream<String ,Event> timeAndEventFilterStream = inputStream
                 .filter((key,event) -> {
-                    boolean check = false;
+                    boolean checkUserQuery = false;
                     if(query.getUser()==null){
                         return true;
                     }
@@ -64,56 +74,58 @@ public class KafkaStreamsService extends CustomLogger {
                         if(eventUserLocation!=null && query.getUser().getLocation()!=null){
                             eventUserLocation = eventUserLocation.toString();
                             String queryLocation = query.getUser().getLocation();
-                            check = eventUserLocation.equals(queryLocation);
+                            checkUserQuery = eventUserLocation.equals(queryLocation);
                         }
                         int eventUserAge = Integer.parseInt(userMap.getOrDefault(ServiceProperties.AGE, 0).toString());
                         if(eventUserAge!=0 && query.getUser().getAgeRange()!=null){
                             int minAge = query.getUser().getAgeRange().getMinAge();
                             int maxAge = query.getUser().getAgeRange().getMaxAge();
-                            check = eventUserAge >= minAge && eventUserAge <= maxAge;
+                            checkUserQuery = eventUserAge >= minAge && eventUserAge <= maxAge;
                         }
                     }
 
-                    return check;
+                    return checkUserQuery;
 
                 })
                 .filter((key, event) -> {
                     for(AttributeType attributeType : query.getAttributeTypeList()){
                         String eventAttributeType = attributeType.getType();
-                        boolean check = false;
+                        boolean checkAttributeQuery = false; // This variable checks for all attributeType and returns true if even one satisfies
                         for(Attribute attribute : attributeType.getAttributeList()){
                             if(attribute.getValue().equals(event.getMapKeyValue(eventAttributeType))){
-                                check = true;
+                                checkAttributeQuery = true;
                             }
                         }
-                        if(!check){
+                        if(!checkAttributeQuery){
                             return false;
                         }
                     }
                     return true;
                 });
 
-        KTable<String, Map<String, Long>> userAttributeCountTable = timeAndEventFilterStream
-                .groupBy((key,event) -> event.getMapKeyValue(ServiceProperties.NAME).toString())
+        KTable<String, Map<String, Integer>> userAttributeCountTable = timeAndEventFilterStream
+                .groupBy((key,event) -> event.getMapKeyValue(ServiceProperties.NAME).toString()) // Making the username as key
                 .aggregate(
                         HashMap::new,
-                        (user, event, aggregate) -> {
+                        (user, event, attributeCountMap) -> {
                             for(AttributeType attributeType : query.getAttributeTypeList()) {
                                 String eventAttributeType = attributeType.getType();
                                 String eventAttributeValue = event.getMapKeyValue(eventAttributeType).toString();
-                                Long currentValue = aggregate.getOrDefault(eventAttributeValue,0L);
-                                currentValue++;
+                                Integer currentAttributeCount = attributeCountMap.getOrDefault(eventAttributeValue,0);
+                                currentAttributeCount++;
 
-                                aggregate.put(eventAttributeValue,currentValue);
+                                attributeCountMap.put(eventAttributeValue,currentAttributeCount);
                             }
-                            return aggregate;
+                            long streamsProcessingLatency = System.currentTimeMillis() - (Long)(event.getMapKeyValue(ServiceProperties.TIMESTAMP));
+                            streamsLatencyCalculator.record(streamsProcessingLatency, TimeUnit.MILLISECONDS);
+                            return attributeCountMap;
                         },
-                        Materialized.<String, Map<String, Long>, KeyValueStore<Bytes, byte[]>>as(
+                        Materialized.<String, Map<String, Integer>, KeyValueStore<Bytes, byte[]>>as(
                                 ServiceProperties.ATTRIBUTE_COUNT_STORE).withKeySerde(Serdes.String()).withValueSerde(new HashMapSerde()).withLoggingDisabled()
 
                 );
 
-        KStream<String,Map<String, Long>> outputStream = userAttributeCountTable
+        KStream<String,Map<String, Integer>> outputStream = userAttributeCountTable
                 .toStream();
 
         outputStream.to(topic, Produced.with(Serdes.String(), new HashMapSerde()));

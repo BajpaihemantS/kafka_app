@@ -11,7 +11,8 @@ import java.util.Properties;
 
 /**
  *
- * Class to get the topics deleted once the process has ended
+ * Class to get the topics deleted once the process has ended.
+ * AdminClient manages the topics in the kafka broker
  *
  */
 
@@ -36,11 +37,8 @@ public class KafkaTopicManager extends CustomLogger implements SmartLifecycle {
     }
 
     public void deleteTopics(List<String> topicList){
-        try{
-            adminClient.deleteTopics(topicList);
-        }catch (Exception e){
-            error("Error deleting the topics",e);
-        }
+        adminClient.deleteTopics(topicList);
+        info("The topics have been deleted");
     }
 
     @Override

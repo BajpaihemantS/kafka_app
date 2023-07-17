@@ -1,7 +1,7 @@
 package com.springkafka.kafka_app.service.kafka_producer;
 
-import com.springkafka.kafka_app.event.Event;
 import com.springkafka.kafka_app.wrapper.CustomLogger;
+import com.springkafka.kafka_app.event.Event;
 import com.springkafka.kafka_app.utils.serdes.EventSerializerDeserializer;
 import com.springkafka.kafka_app.utils.ServiceProperties;
 import com.springkafka.kafka_app.utils.TopicEnum;
@@ -46,7 +46,7 @@ public class ProducerKafka extends CustomLogger {
         return new KafkaProducer<>(props);
     }
 
-    public void sendMessage(Event event, Producer<String, Event> producer) {
+    public void sendEventWithProducer(Event event, Producer<String, Event> producer) {
         String topic = TopicEnum.TOPIC.getTopicName();
         ProducerRecord<String, Event> record = new ProducerRecord<>(topic, event);
         producer.send(record, (metadata, exception) -> {
@@ -59,10 +59,10 @@ public class ProducerKafka extends CustomLogger {
         });
     }
 
-    public Runnable sendTasks(Event event){
+    public Runnable sendEvent(Event event){
         return () -> {
             Producer<String, Event> producer = createProducer();
-            sendMessage( event, producer);
+            sendEventWithProducer( event, producer);
             producer.close();
         };
     }
@@ -71,7 +71,7 @@ public class ProducerKafka extends CustomLogger {
         return () -> {
             for(Event event : eventList){
                 try {
-                    executorServiceWrapper.submit(sendTasks(event));
+                    executorServiceWrapper.submit(sendEvent(event));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

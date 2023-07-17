@@ -9,7 +9,8 @@ import java.util.Map;
 /**
  *
  * This is the class where the coming Event is being mapped.
- * This is designed for handling the dynamic data.
+ * This is designed for handling the dynamic data and maps
+ * it to a map of String and Object
  *
  */
 

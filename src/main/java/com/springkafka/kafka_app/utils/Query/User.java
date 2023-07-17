@@ -1,7 +1,5 @@
 package com.springkafka.kafka_app.utils.Query;
 
-import org.apache.kafka.common.protocol.types.Field;
-
 public class User {
     private String location;
     private AgeRange ageRange;

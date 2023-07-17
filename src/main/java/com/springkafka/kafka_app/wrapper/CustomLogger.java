@@ -3,18 +3,23 @@ package com.springkafka.kafka_app.wrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class CustomLogger {
-    Logger logger = LoggerFactory.getLogger(org.slf4j.Logger.class);
+/**
+ * This was the wrapper of the logger class
+ * which describes the function which were required by me.
+ */
 
-    public void debug(String message, Object... args) {
+public abstract class CustomLogger {
+    static Logger logger = LoggerFactory.getLogger(org.slf4j.Logger.class);
+
+    public static void debug(String message, Object... args) {
         logger.debug(message, args);
     }
 
-    public void info(String message, Object... args) {
+    public static void info(String message, Object... args) {
         logger.info(message, args);
     }
 
-    public void error(String message, Throwable throwable) {
+    public static void error(String message, Throwable throwable) {
         logger.error(message, throwable);
     }
 
