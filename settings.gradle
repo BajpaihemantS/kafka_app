@@ -1,1 +1,6 @@
-rootProject.name = 'kafka_app'
+rootProject.name = 'KafkaProject'
+include 'Producer'
+include 'StreamsAndConsumer'
+include 'UtilModule'
+include 'UtilModule'
+
