@@ -17,6 +17,7 @@ import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
@@ -33,9 +34,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class KafkaStreamsService extends CustomLogger {
     private KafkaStreams kafkaStreams;
-    private static final  Timer streamsLatencyCalculator = Timer.builder("record_stream_latency")
-            .register(Metrics.globalRegistry);
-
     public KafkaStreamsService() {
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
     }
@@ -50,11 +48,9 @@ public class KafkaStreamsService extends CustomLogger {
         return properties;
     }
 
-
-    public void getFilteredStream(Query query, String topic){
+    public Topology streamsTopology(Query query, String topic){
 
         StreamsBuilder streamsBuilder = new StreamsBuilder();
-        Properties config = getProperties(topic);
 
         KStream<String, Event> inputStream = streamsBuilder.stream(TopicEnum.TOPIC.getTopicName());
 
@@ -90,7 +86,7 @@ public class KafkaStreamsService extends CustomLogger {
                 .filter((key, event) -> {
                     for(AttributeType attributeType : query.getAttributeTypeList()){
                         String eventAttributeType = attributeType.getType();
-                        boolean checkAttributeQuery = false; // This variable checks for all attributeType and returns true if even one satisfies
+                        boolean checkAttributeQuery = false;
                         for(Attribute attribute : attributeType.getAttributeList()){
                             if(attribute.getValue().equals(event.getMapKeyValue(eventAttributeType))){
                                 checkAttributeQuery = true;
@@ -104,7 +100,7 @@ public class KafkaStreamsService extends CustomLogger {
                 });
 
         KTable<String, Map<String, Integer>> userAttributeCountTable = timeAndEventFilterStream
-                .groupBy((key,event) -> event.getMapKeyValue(ServiceProperties.NAME).toString()) // Making the username as key
+                .groupBy((key,event) -> event.getMapKeyValue(ServiceProperties.NAME).toString())
                 .aggregate(
                         HashMap::new,
                         (user, event, attributeCountMap) -> {
@@ -116,8 +112,6 @@ public class KafkaStreamsService extends CustomLogger {
 
                                 attributeCountMap.put(eventAttributeValue,currentAttributeCount);
                             }
-                            long streamsProcessingLatency = System.currentTimeMillis() - (Long)(event.getMapKeyValue(ServiceProperties.TIMESTAMP));
-                            streamsLatencyCalculator.record(streamsProcessingLatency, TimeUnit.MILLISECONDS);
                             return attributeCountMap;
                         },
                         Materialized.<String, Map<String, Integer>, KeyValueStore<Bytes, byte[]>>as(
@@ -130,9 +124,16 @@ public class KafkaStreamsService extends CustomLogger {
 
         outputStream.to(topic, Produced.with(Serdes.String(), new HashMapSerde()));
 
-        kafkaStreams = new KafkaStreams(streamsBuilder.build(), config);
-        kafkaStreams.start();
+        return streamsBuilder.build();
 
+    }
+
+
+    public void getFilteredStream(Query query, String topic){
+        Properties config = getProperties(topic);
+        Topology topology = streamsTopology(query,topic);
+        kafkaStreams = new KafkaStreams(topology, config);
+        kafkaStreams.start();
     }
 
     public Runnable startStreams(Query query, String topic){

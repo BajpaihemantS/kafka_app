@@ -36,6 +36,8 @@ public class ConsumerKafka extends CustomLogger {
 
     private final ExecutorServiceWrapper executorServiceWrapper;
     private static final Timer consumerLatencyCalculator = Timer.builder("record_consumer_latency")
+            .publishPercentiles(0.99) // this includes the P99 percentile
+            .publishPercentileHistogram()
             .register(Metrics.globalRegistry);
 
     @Autowired
@@ -67,7 +69,7 @@ public class ConsumerKafka extends CustomLogger {
 
         while(true){
 
-            ConsumerRecords<String, Map<String, Integer>> consumerRecords = consumer.poll(Duration.ofMillis(1000));
+            ConsumerRecords<String, Map<String, Integer>> consumerRecords = consumer.poll(Duration.ofMillis(100));
 
             if(consumerRecords.isEmpty()){
                 noMessageCount++;
@@ -78,32 +80,33 @@ public class ConsumerKafka extends CustomLogger {
                     error("Failed while trying to make consumer thread sleep with exception {}", e);
                     e.printStackTrace();
                 }
-                continue;
             }
             else{
+                handleRecords(consumerRecords,query,userLatestTimeMap);
                 noMessageCount = 1;
             }
-
-
-            long recordReceivedTime = System.currentTimeMillis();
-            consumerRecords.forEach(record -> {
-                String user = record.key();
-                long userEventTime = record.timestamp();
-
-                boolean queryCheckResult = QueryCheckAndPrintUsers.checkQuery(record.value(),query);
-                boolean isUserPresent = userLatestTimeMap.containsKey(user);
-
-                if(queryCheckResult && !isUserPresent){
-                    userLatestTimeMap.put(user,userEventTime);
-                }
-                else if(!queryCheckResult && isUserPresent){
-                    userLatestTimeMap.remove(user);
-                }
-                long latency = recordReceivedTime - record.timestamp();
-                consumerLatencyCalculator.record(latency, TimeUnit.MILLISECONDS);
-                LatencyCalculator.checkAndAddLatency(latency);
-            });
         }
+    }
+
+    public void handleRecords(ConsumerRecords<String, Map<String, Integer>> consumerRecords, Query query, HashMap<String,Long> userLatestTimeMap){
+        long recordReceivedTime = System.currentTimeMillis();
+        consumerRecords.forEach(record -> {
+            String user = record.key();
+            long userEventTime = record.timestamp();
+
+            boolean queryCheckResult = QueryCheckAndPrintUsers.checkQuery(record.value(),query);
+            boolean isUserPresent = userLatestTimeMap.containsKey(user);
+
+            if(queryCheckResult && !isUserPresent){
+                userLatestTimeMap.put(user,userEventTime);
+            }
+            else if(!queryCheckResult && isUserPresent){
+                userLatestTimeMap.remove(user);
+            }
+            long latency = recordReceivedTime - record.timestamp();
+            consumerLatencyCalculator.record(latency, TimeUnit.MILLISECONDS);
+            LatencyCalculator.checkAndAddLatency(latency);
+        });
     }
 
     public void consumeEvents(String topic, Query query, HashMap<String,Long> userLatestTimeMap){

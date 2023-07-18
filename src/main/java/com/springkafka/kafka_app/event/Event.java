@@ -13,7 +13,6 @@ import java.util.Map;
  * it to a map of String and Object
  *
  */
-
 public class Event {
 
     private Map<String,Object> mapKeyValue = new LinkedHashMap<>();
