@@ -1,8 +1,8 @@
 package com.springkafka.kafka_app.service.kafka_consumer;
 
-import com.springkafka.kafka_app.utils.GroupEnum;
+import com.springkafka.kafka_app.utils.topicAndGroupEnum.GroupEnum;
 import com.springkafka.kafka_app.utils.ServiceProperties;
-import com.springkafka.kafka_app.utils.calculator.QueryCheckAndPrintUsers;
+import com.springkafka.kafka_app.utils.QueryCheckAndPrintUsers;
 import com.springkafka.kafka_app.wrapper.CustomLogger;
 import com.springkafka.kafka_app.utils.Query.Query;
 import com.springkafka.kafka_app.utils.calculator.LatencyCalculator;

@@ -1,4 +1,4 @@
-package com.springkafka.kafka_app.utils.calculator;
+package com.springkafka.kafka_app.utils;
 
 import com.springkafka.kafka_app.wrapper.CustomLogger;
 import com.springkafka.kafka_app.utils.Query.Attribute;
@@ -63,12 +63,17 @@ public class QueryCheckAndPrintUsers extends CustomLogger {
         long queryStartTime = query.getTimestamp().getStartTime();
         long queryEndTime = query.getTimestamp().getEndTime();
 
+        // Checking if the user satisfies the time query
+
         userMap.forEach((user,eventTime) -> {
             boolean timeCheck = eventTime>=queryStartTime && eventTime<=queryEndTime;
-            if(timeCheck){
-                info(user);
+            if(!timeCheck){
+                userMap.remove(user);
             }
         });
 
+        // Printing the valid users and their count
+
+        info("User count is {} with users {}",userMap.size(),userMap.keySet());
     }
 }

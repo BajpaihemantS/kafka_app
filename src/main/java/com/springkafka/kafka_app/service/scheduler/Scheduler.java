@@ -2,7 +2,7 @@ package com.springkafka.kafka_app.service.scheduler;
 
 import com.springkafka.kafka_app.service.kafka_consumer.ConsumerKafka;
 import com.springkafka.kafka_app.utils.Query.Query;
-import com.springkafka.kafka_app.utils.calculator.QueryCheckAndPrintUsers;
+import com.springkafka.kafka_app.utils.QueryCheckAndPrintUsers;
 import com.springkafka.kafka_app.wrapper.CustomLogger;
 
 import java.util.HashMap;

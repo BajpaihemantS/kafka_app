@@ -4,7 +4,7 @@ import com.springkafka.kafka_app.service.kafka_consumer.ConsumerKafka;
 import com.springkafka.kafka_app.service.kafka_producer.ProducerKafka;
 import com.springkafka.kafka_app.utils.EventGenerator;
 import com.springkafka.kafka_app.utils.ServiceProperties;
-import com.springkafka.kafka_app.utils.TopicEnum;
+import com.springkafka.kafka_app.utils.topicAndGroupEnum.TopicEnum;
 import com.springkafka.kafka_app.wrapper.CustomLogger;
 import com.springkafka.kafka_app.config.KafkaTopicManager;
 import com.springkafka.kafka_app.event.Event;

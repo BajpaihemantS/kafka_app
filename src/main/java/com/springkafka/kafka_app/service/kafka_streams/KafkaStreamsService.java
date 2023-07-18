@@ -6,12 +6,10 @@ import com.springkafka.kafka_app.utils.Query.Attribute;
 import com.springkafka.kafka_app.utils.Query.AttributeType;
 import com.springkafka.kafka_app.utils.Query.Query;
 import com.springkafka.kafka_app.utils.ServiceProperties;
-import com.springkafka.kafka_app.utils.TopicEnum;
+import com.springkafka.kafka_app.utils.topicAndGroupEnum.TopicEnum;
 import com.springkafka.kafka_app.utils.serdes.EventSerde;
 import com.springkafka.kafka_app.utils.serdes.HashMapSerde;
 import com.springkafka.kafka_app.wrapper.CustomLogger;
-import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.Timer;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -29,7 +27,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class KafkaStreamsService extends CustomLogger {

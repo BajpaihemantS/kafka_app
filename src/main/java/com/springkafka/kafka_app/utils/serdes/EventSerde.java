@@ -19,8 +19,6 @@ public class EventSerde implements Serde<Event> {
 
     @Override
     public void configure(Map<String, ?> configs, boolean isKey) {
-//        serializer.configure(configs, isKey);
-//        deserializer.configure(configs, isKey);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.springkafka.kafka_app.utils;
+package com.springkafka.kafka_app.utils.topicAndGroupEnum;
 
 /**
  * This enum returns the topic name
