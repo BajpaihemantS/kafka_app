@@ -95,10 +95,10 @@ public class ConsumerKafka extends CustomLogger {
                 boolean queryCheckResult = QueryCheckAndPrintUsers.checkQuery(record.value(),query);
                 boolean isUserPresent = userLatestTimeMap.containsKey(user);
 
-                if(queryCheckResult && !isUserPresent){
+                if(queryCheckResult){
                     userLatestTimeMap.put(user,userEventTime);
                 }
-                else if(!queryCheckResult && isUserPresent){
+                else if(isUserPresent){
                     userLatestTimeMap.remove(user);
                 }
                 long latency = recordReceivedTime - record.timestamp();
