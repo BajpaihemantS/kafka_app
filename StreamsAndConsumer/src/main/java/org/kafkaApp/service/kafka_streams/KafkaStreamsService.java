@@ -32,8 +32,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class KafkaStreamsService extends CustomLogger {
     private KafkaStreams kafkaStreams;
-    private static final  Timer streamsLatencyCalculator = Timer.builder("record_stream_latency")
-            .register(Metrics.globalRegistry);
 
     public KafkaStreamsService() {
         Runtime.getRuntime().addShutdownHook(new Thread(this::shutdown));
@@ -115,8 +113,6 @@ public class KafkaStreamsService extends CustomLogger {
 
                                 attributeCountMap.put(eventAttributeValue,currentAttributeCount);
                             }
-                            long streamsProcessingLatency = System.currentTimeMillis() - (Long)(event.getMapKeyValue(ServiceProperties.TIMESTAMP));
-                            streamsLatencyCalculator.record(streamsProcessingLatency, TimeUnit.MILLISECONDS);
                             return attributeCountMap;
                         },
                         Materialized.<String, Map<String, Integer>, KeyValueStore<Bytes, byte[]>>as(

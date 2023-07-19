@@ -36,6 +36,8 @@ public class ConsumerKafka extends CustomLogger {
 
     private final ExecutorServiceWrapper executorServiceWrapper;
     private static final Timer consumerLatencyCalculator = Timer.builder("record_consumer_latency")
+            .publishPercentiles(0.99)
+            .publishPercentileHistogram()
             .register(Metrics.globalRegistry);
 
     @Autowired
@@ -101,7 +103,7 @@ public class ConsumerKafka extends CustomLogger {
                 }
                 long latency = recordReceivedTime - record.timestamp();
                 consumerLatencyCalculator.record(latency, TimeUnit.MILLISECONDS);
-                LatencyCalculator.checkAndAddLatency(latency);
+//                LatencyCalculator.checkAndAddLatency(latency);
             });
         }
     }
