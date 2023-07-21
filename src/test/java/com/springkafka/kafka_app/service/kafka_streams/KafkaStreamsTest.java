@@ -48,8 +48,8 @@ public class KafkaStreamsTest {
         KafkaStreamsService kafkaStreamsService = new KafkaStreamsService();
 
         Query query = new Query();
-        Attribute attribute1 = new Attribute("buy_now", new Count(2, "lt"));
-        Attribute attribute2 = new Attribute("sign_out", new Count(2, "lt"));
+        Attribute attribute1 = new Attribute("buy_now", new Count(2, "lt"), false);
+        Attribute attribute2 = new Attribute("sign_out", new Count(2, "lt"), true);
         AttributeType attributeType = new AttributeType("eventType", Arrays.asList(attribute1,attribute2));
         Timestamp timestamp = new Timestamp(0L,2088218478702L);
         query.setAttributeTypeList(Collections.singletonList(attributeType));

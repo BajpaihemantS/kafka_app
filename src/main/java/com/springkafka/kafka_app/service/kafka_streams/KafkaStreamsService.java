@@ -83,6 +83,19 @@ public class KafkaStreamsService extends CustomLogger {
                 .filter((key, event) -> {
                     for(AttributeType attributeType : query.getAttributeTypeList()){
                         String eventAttributeType = attributeType.getType();
+                        for(Attribute attribute : attributeType.getAttributeList()){
+                            if(attribute.isNotIncluded()){
+                                if(attribute.getValue().equals(event.getMapKeyValue(eventAttributeType))){
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                    return true;
+                })
+                .filter((key, event) -> {
+                    for(AttributeType attributeType : query.getAttributeTypeList()){
+                        String eventAttributeType = attributeType.getType();
                         boolean checkAttributeQuery = false;
                         for(Attribute attribute : attributeType.getAttributeList()){
                             if(attribute.getValue().equals(event.getMapKeyValue(eventAttributeType))){

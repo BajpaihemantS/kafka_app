@@ -1,15 +1,25 @@
 package com.springkafka.kafka_app.utils.Query;
 
 public class Attribute {
-    String value;
-    Count count;
+    private String value;
+    private Count count;
+    private boolean notIncluded;
 
     public Attribute() {
     }
 
-    public Attribute(String value, Count count) {
+    public Attribute(String value, Count count, boolean notIncluded) {
         this.value = value;
         this.count = count;
+        this.notIncluded = notIncluded;
+    }
+
+    public boolean isNotIncluded() {
+        return notIncluded;
+    }
+
+    public void setNotIncluded(boolean notIncluded) {
+        this.notIncluded = notIncluded;
     }
 
     public String getValue() {
